@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttenSys - Automated Student Attendance Monitoring System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .dashboard-grid-bg {
+            background-color: #f9fafb;
+            background-image:
+                linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+
+<body class="bg-white text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-white/80 backdrop-blur-md fixed top-0 left-0 right-0 z-50 border-b border-gray-200">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-gray-900">
+                Atten<span class="text-indigo-600">Sys</span>
+            </a>
+            <nav class="hidden md:flex space-x-8">
+                <a href="#features" class="text-gray-600 hover:text-indigo-600 transition-colors">Features</a>
+                <a href="#how-it-works" class="text-gray-600 hover:text-indigo-600 transition-colors">How It Works</a>
+                <a href="#benefits" class="text-gray-600 hover:text-indigo-600 transition-colors">Benefits</a>
+                <a href="#contact" class="text-gray-600 hover:text-indigo-600 transition-colors">Contact</a>
+            </nav>
+            <a href="#contact"
+                class="hidden md:inline-block bg-indigo-600 text-white font-semibold px-5 py-2 rounded-lg hover:bg-indigo-700 transition-transform transform hover:scale-105">Request
+                a Demo</a>
+            <button id="mobile-menu-button" class="md:hidden text-gray-800">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4">
+            <a href="#features" class="block py-2 text-gray-600 hover:text-indigo-600">Features</a>
+            <a href="#how-it-works" class="block py-2 text-gray-600 hover:text-indigo-600">How It Works</a>
+            <a href="#benefits" class="block py-2 text-gray-600 hover:text-indigo-600">Benefits</a>
+            <a href="#contact" class="block py-2 text-gray-600 hover:text-indigo-600">Contact</a>
+            <a href="#contact"
+                class="block mt-2 text-center bg-indigo-600 text-white font-semibold px-5 py-2 rounded-lg hover:bg-indigo-700">Request
+                a Demo</a>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="pt-32 pb-16 md:pt-40 md:pb-24 bg-gray-50">
+            <div class="container mx-auto px-6">
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div class="text-center md:text-left">
+                        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight">
+                            Automate Attendance. <br class="hidden md:block" />
+                            <span class="text-indigo-600">Unlock Insights.</span>
+                        </h1>
+                        <p class="mt-6 text-lg text-gray-600 max-w-lg mx-auto md:mx-0">
+                            Say goodbye to manual roll calls and inaccurate records. AttenSys revolutionizes attendance
+                            monitoring with a seamless, QR-based solution, giving you real-time data and actionable
+                            analytics.
+                        </p>
+                        <div class="mt-8 flex justify-center md:justify-start space-x-4">
+                            <a href="#contact"
+                                class="bg-indigo-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-indigo-700 transition-transform transform hover:scale-105">Request
+                                a Free Demo</a>
+                            <a href="#how-it-works"
+                                class="bg-white text-gray-800 font-semibold px-8 py-3 rounded-lg border border-gray-300 hover:bg-gray-100 transition-colors">Learn
+                                More</a>
+                        </div>
+                    </div>
+                    <div class="p-4 md:p-6 bg-white rounded-2xl shadow-2xl border border-gray-200 dashboard-grid-bg">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-lg text-gray-900">Real-Time Dashboard</h3>
+                            <div class="flex space-x-1">
+                                <span class="w-3 h-3 bg-red-400 rounded-full"></span>
+                                <span class="w-3 h-3 bg-yellow-400 rounded-full"></span>
+                                <span class="w-3 h-3 bg-green-400 rounded-full"></span>
+                            </div>
+                        </div>
+                        <!-- Mock Dashboard UI -->
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                <div class="bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow border">
+                                    <p class="text-sm text-gray-500">Total Students</p>
+                                    <p class="text-2xl font-bold text-indigo-600">1,254</p>
+                                </div>
+                                <div class="bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow border">
+                                    <p class="text-sm text-gray-500">Present Today</p>
+                                    <p class="text-2xl font-bold text-green-600">93.2%</p>
+                                </div>
+                                <div class="bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow border">
+                                    <p class="text-sm text-gray-500">At-Risk</p>
+                                    <p class="text-2xl font-bold text-yellow-500">45</p>
+                                </div>
+                                <div class="bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow border">
+                                    <p class="text-sm text-gray-500">Alerts</p>
+                                    <p class="text-2xl font-bold text-red-500">12</p>
+                                </div>
+                            </div>
+                            <div class="bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow border">
+                                <p class="text-sm font-semibold text-gray-700 mb-2">Attendance Trend</p>
+                                <!-- Mock Chart -->
+                                <div class="w-full h-32 flex items-end space-x-2">
+                                    <div class="w-1/6 bg-indigo-200 h-1/3 rounded-t-sm"></div>
+                                    <div class="w-1/6 bg-indigo-300 h-2/3 rounded-t-sm"></div>
+                                    <div class="w-1/6 bg-indigo-400 h-3/4 rounded-t-sm"></div>
+                                    <div class="w-1/6 bg-indigo-300 h-2/4 rounded-t-sm"></div>
+                                    <div class="w-1/6 bg-indigo-500 h-full rounded-t-sm"></div>
+                                    <div class="w-1/6 bg-indigo-400 h-4/5 rounded-t-sm"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pain Points Section -->
+        <section class="py-16 md:py-24">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">The Inefficiencies of Manual Tracking</h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
+                    Traditional attendance methods waste valuable teaching time, are prone to errors, and provide zero
+                    real-time insight into student engagement.
+                </p>
+                <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Pain Point 1 -->
+                    <div class="bg-gray-50 p-8 rounded-xl border border-gray-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="w-12 h-12 text-indigo-600 mx-auto mb-4">
+                            <path d="M21 7.5V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3.5" />
+                            <path d="M14 2v4h-4" />
+                            <path d="M16 7.5l-5 5" />
+                            <path d="m16 12.5-5-5" />
+                        </svg>
+                        <h3 class="text-xl font-semibold text-gray-900">Error-Prone & Inaccurate</h3>
+                        <p class="mt-2 text-gray-600">Manual entries lead to mistakes, forgotten updates, and create
+                            opportunities for proxy attendance, compromising data integrity.</p>
+                    </div>
+                    <!-- Pain Point 2 -->
+                    <div class="bg-gray-50 p-8 rounded-xl border border-gray-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="w-12 h-12 text-indigo-600 mx-auto mb-4">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 6v6l4 2" />
+                        </svg>
+                        <h3 class="text-xl font-semibold text-gray-900">Wasted Classroom Time</h3>
+                        <p class="mt-2 text-gray-600">Faculty spend the first 5-10 minutes of every class on roll calls,
+                            reducing valuable instructional time and disrupting the flow of learning.</p>
+                    </div>
+                    <!-- Pain Point 3 -->
+                    <div class="bg-gray-50 p-8 rounded-xl border border-gray-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="w-12 h-12 text-indigo-600 mx-auto mb-4">
+                            <path d="M12 20V10" />
+                            <path d="M18 20V4" />
+                            <path d="M6 20V16" />
+                        </svg>
+                        <h3 class="text-xl font-semibold text-gray-900">No Actionable Insights</h3>
+                        <p class="mt-2 text-gray-600">Paper-based records make it impossible to track trends, identify
+                            chronically absent students, or generate reports without tedious manual work.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="py-16 md:py-24 bg-gray-50">
+            <div class="container mx-auto px-6">
+                <div class="text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900">A Modern Solution for Modern Education</h2>
+                    <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
+                        AttenSys is packed with features designed for ease of use, accuracy, and powerful insights.
+                    </p>
+                </div>
+                <div class="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Feature Card 1 -->
+                    <div class="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                        <div
+                            class="bg-indigo-100 text-indigo-600 rounded-full w-12 h-12 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="w-6 h-6">
+                                <rect x="3" y="3" width="18" height="18" rx="2" />
+                                <path d="M7 12h10" />
+                                <path d="M12 7v10" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-4 text-xl font-semibold">Instant QR Code Attendance</h3>
+                        <p class="mt-2 text-gray-600">Generate a unique, time-sensitive QR code for each class. Students
+                            scan with their phones for secure, instant check-in.</p>
+                    </div>
+                    <!-- Feature Card 2 -->
+                    <div class="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                        <div
+                            class="bg-indigo-100 text-indigo-600 rounded-full w-12 h-12 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="w-6 h-6">
+                                <path d="M12 20V10" />
+                                <path d="M18 20V4" />
+                                <path d="M6 20V16" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-4 text-xl font-semibold">Real-Time Dashboards</h3>
+                        <p class="mt-2 text-gray-600">Monitor attendance live as it happens. See exactly who is present
+                            and who is not, from any device, anywhere.</p>
+                    </div>
+                    <!-- Feature Card 3 -->
+                    <div class="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                        <div
+                            class="bg-indigo-100 text-indigo-600 rounded-full w-12 h-12 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="w-6 h-6">
+                                <path d="M15 3h6v6" />
+                                <path d="M19 19 9 9" />
+                                <path d="M9 3H3v6" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-4 text-xl font-semibold">Insightful Analytics</h3>
+                        <p class="mt-2 text-gray-600">Automatically generate reports on attendance trends, identify
+                            at-risk students, and gain insights to improve engagement.</p>
+                    </div>
+                    <!-- Feature Card 4 -->
+                    <div class="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                        <div
+                            class="bg-indigo-100 text-indigo-600 rounded-full w-12 h-12 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="w-6 h-6">
+                                <path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
+                                <path d="M10 9v6" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-4 text-xl font-semibold">Mobile-First Design</h3>
+                        <p class="mt-2 text-gray-600">Accessible on any device. Students can use their smartphones to
+                            check in, and faculty can manage classes on the go.</p>
+                    </div>
+                    <!-- Feature Card 5 -->
+                    <div class="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                        <div
+                            class="bg-indigo-100 text-indigo-600 rounded-full w-12 h-12 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="w-6 h-6">
+                                <path d="M12 10v4" />
+                                <path d="M12.001 2.002a10 10 0 1 1 0 19.996 10 10 0 0 1 0-19.996Z" />
+                                <path d="M12 18a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1Z" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-4 text-xl font-semibold">Offline & Online Classes</h3>
+                        <p class="mt-2 text-gray-600">Our hybrid approach works seamlessly for both in-person lectures
+                            and remote learning environments.</p>
+                    </div>
+                    <!-- Feature Card 6 -->
+                    <div class="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                        <div
+                            class="bg-indigo-100 text-indigo-600 rounded-full w-12 h-12 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="w-6 h-6">
+                                <path d="M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8" />
+                                <path d="m22 12-4.5 4.5L16 15" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-4 text-xl font-semibold">Easy Integration</h3>
+                        <p class="mt-2 text-gray-600">Designed with APIs ready to integrate with your existing College
+                            Management Systems for a unified workflow.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section id="how-it-works" class="py-16 md:py-24">
+            <div class="container mx-auto px-6">
+                <div class="text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Simple Steps to Smarter Attendance</h2>
+                    <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
+                        Get up and running in minutes with our intuitive process.
+                    </p>
+                </div>
+                <div class="mt-12 grid md:grid-cols-3 gap-8 md:gap-12 relative">
+                    <!-- Dashed line connector -->
+                    <div class="hidden md:block absolute top-1/2 left-0 w-full h-0.5">
+                        <svg width="100%" height="2">
+                            <line x1="0" y1="1" x2="100%" y2="1" stroke="#cbd5e1" stroke-width="2"
+                                stroke-dasharray="8 8" />
+                        </svg>
+                    </div>
+
+                    <!-- Step 1 -->
+                    <div class="relative text-center z-10">
+                        <div
+                            class="bg-indigo-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto border-4 border-white shadow-lg">
+                            1</div>
+                        <h3 class="mt-6 text-xl font-semibold">Generate QR Code</h3>
+                        <p class="mt-2 text-gray-600">Faculty generates a unique, secure QR code for the class session
+                            from their dashboard.</p>
+                    </div>
+                    <!-- Step 2 -->
+                    <div class="relative text-center z-10">
+                        <div
+                            class="bg-indigo-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto border-4 border-white shadow-lg">
+                            2</div>
+                        <h3 class="mt-6 text-xl font-semibold">Students Scan</h3>
+                        <p class="mt-2 text-gray-600">Students use their smartphone camera to scan the code, instantly
+                            marking themselves present.</p>
+                    </div>
+                    <!-- Step 3 -->
+                    <div class="relative text-center z-10">
+                        <div
+                            class="bg-indigo-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto border-4 border-white shadow-lg">
+                            3</div>
+                        <h3 class="mt-6 text-xl font-semibold">View Real-time Data</h3>
+                        <p class="mt-2 text-gray-600">Attendance data appears instantly on the faculty and admin
+                            dashboards for immediate review.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Benefits / Competitive Advantage Section -->
+        <section id="benefits" class="py-16 md:py-24 bg-gray-50">
+            <div class="container mx-auto px-6">
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h2 class="text-3xl md:text-4xl font-bold text-gray-900">The AttenSys Advantage</h2>
+                        <p class="mt-4 text-lg text-gray-600">We provide a software-only solution that is
+                            cost-effective, easy to implement, and built for the future of education.</p>
+                        <ul class="mt-8 space-y-4">
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="h-6 w-6 text-green-500 mr-3 flex-shrink-0 mt-1" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <div>
+                                    <h4 class="font-semibold">Zero Hardware Dependency</h4>
+                                    <p class="text-gray-600">No need for expensive biometric scanners or dedicated
+                                        hardware. AttenSys works with the devices your students and faculty already own.
+                                    </p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="h-6 w-6 text-green-500 mr-3 flex-shrink-0 mt-1" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <div>
+                                    <h4 class="font-semibold">Cost-Effective Solution</h4>
+                                    <p class="text-gray-600">Minimal infrastructure requirements and a simple
+                                        subscription model make our system affordable for institutions of all sizes.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="h-6 w-6 text-green-500 mr-3 flex-shrink-0 mt-1" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <div>
+                                    <h4 class="font-semibold">Scalable & Secure</h4>
+                                    <p class="text-gray-600">From a single department to an entire university, our
+                                        cloud-based infrastructure is built to scale with your needs while keeping data
+                                        secure.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="hidden md:block">
+                        <img src="https://placehold.co/600x500/e9d5ff/6d28d9?text=University+Campus"
+                            alt="University campus" class="rounded-2xl shadow-xl w-full h-auto object-cover">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section class="py-16 md:py-24">
+            <div class="container mx-auto px-6">
+                <div class="text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Trusted by Educators & Students</h2>
+                    <p class="mt-4 text-lg text-gray-600">Hear what our users have to say about their experience.</p>
+                </div>
+                <div class="mt-12 grid lg:grid-cols-2 gap-8">
+                    <div class="bg-gray-50 p-8 rounded-lg border border-gray-200">
+                        <p class="text-gray-700 text-lg">"AttenSys has been a game-changer. I'm saving at least 10
+                            minutes per lecture, which I can now dedicate to actual teaching. The ability to see
+                            attendance trends has helped me identify and support struggling students early on."</p>
+                        <div class="mt-6 flex items-center">
+                            <img src="https://placehold.co/50x50/c7d2fe/4338ca?text=AP" alt="Professor Sharma"
+                                class="w-12 h-12 rounded-full mr-4">
+                            <div>
+                                <p class="font-semibold text-gray-900">Dr. Anjali Sharma</p>
+                                <p class="text-gray-600">Professor of Computer Science</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-8 rounded-lg border border-gray-200">
+                        <p class="text-gray-700 text-lg">"It's so much faster than waiting for my name to be called. I
+                            just scan the code when I walk in, and it's done. I can also easily track my own attendance
+                            record through the app to make sure I'm on track."</p>
+                        <div class="mt-6 flex items-center">
+                            <img src="https://placehold.co/50x50/d1fae5/059669?text=RK" alt="Rohan Kumar"
+                                class="w-12 h-12 rounded-full mr-4">
+                            <div>
+                                <p class="font-semibold text-gray-900">Rohan Kumar</p>
+                                <p class="text-gray-600">B.Tech Student</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section id="contact" class="py-16 md:py-24 bg-indigo-700">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-white">Ready to Revolutionize Your Attendance System?
+                </h2>
+                <p class="mt-4 text-lg text-indigo-200 max-w-2xl mx-auto">
+                    Join leading institutions in creating a more efficient, data-driven academic environment. Schedule a
+                    personalized demo with our team today.
+                </p>
+                <div class="mt-8">
+                    <a href="#"
+                        class="bg-white text-indigo-600 font-bold px-10 py-4 rounded-lg hover:bg-gray-100 transition-transform transform hover:scale-105 inline-block">Get
+                        Started for Free</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold">Atten<span class="text-indigo-400">Sys</span></h3>
+                    <p class="mt-2 text-gray-400">Automated Attendance, <br>Actionable Insights.</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-200">Quick Links</h4>
+                    <ul class="mt-4 space-y-2">
+                        <li><a href="#features" class="text-gray-400 hover:text-white">Features</a></li>
+                        <li><a href="#how-it-works" class="text-gray-400 hover:text-white">How It Works</a></li>
+                        <li><a href="#benefits" class="text-gray-400 hover:text-white">Benefits</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-200">Legal</h4>
+                    <ul class="mt-4 space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-200">Contact Us</h4>
+                    <ul class="mt-4 space-y-2 text-gray-400">
+                        <li>Email: contact@attensys.com</li>
+                        <li>Phone: +91 12345 67890</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-12 border-t border-gray-700 pt-8 text-center text-gray-500">
+                <p>&copy; 2024 AttenSys. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/javascripts/front.js"></script>
+
+</body>
+
+</html>

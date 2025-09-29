@@ -1,0 +1,25 @@
+{
+  "name": "sih-smart-attendance-",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Surajmishra17/SIH-smart-attendance-.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Surajmishra17/SIH-smart-attendance-/issues"
+  },
+  "homepage": "https://github.com/Surajmishra17/SIH-smart-attendance-#readme",
+  "dependencies": {
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "nodemon": "^3.1.10"
+  }
+}
