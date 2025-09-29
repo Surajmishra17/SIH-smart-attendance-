@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 // This is the connection string for your MongoDB database.
 // 'attenSysDb' will be the name of the database created in MongoDB.
-const dbURI = 'mongodb+srv://reachtanish:<dbpass>@cluster0.0jq9vh4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const dbURI = 'mongodb://localhost:27017/attenSysDb';
 
 const connectDB = async () => {
     try {
