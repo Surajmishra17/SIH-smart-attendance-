@@ -3,6 +3,7 @@ const router = express.Router();
 const Class = require('../models/classmodel');
 const Attendance = require('../models/attendancemodel');
 const User = require('../models/usermodel.js');
+const qrcode = require('qrcode');
 
 // Middleware to ensure a user is logged in
 const isAuthenticated = (req, res, next) => {
@@ -94,5 +95,64 @@ router.delete('/student/class/:classId', async (req, res) => {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 });
+
+
+// --- TEACHER DASHBOARD ROUTES ---
+
+router.get('/teacher', async (req, res) => {
+    try {
+        const teacherId = req.session.userId;
+        const classes = await Class.find({ teacher: teacherId });
+        res.render('teacher-dashboard', { classes });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
+
+router.post('/teacher/class', async (req, res) => {
+    try {
+        const { className } = req.body;
+        const teacherId = req.session.userId;
+        const newClass = new Class({
+            name: className,
+            teacher: teacherId
+        });
+        await newClass.save();
+        res.status(201).json({ success: true, message: 'Class created successfully!' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+});
+
+router.delete('/teacher/class/:classId', async (req, res) => {
+    try {
+        const { classId } = req.params;
+        await Class.findByIdAndDelete(classId);
+        // Also, you might want to delete associated attendance records
+        await Attendance.deleteMany({ class: classId });
+        res.json({ success: true, message: 'Class deleted successfully!' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+});
+
+router.post('/teacher/generate-qr', async (req, res) => {
+    try {
+        const { classId } = req.body;
+        // The data to be encoded in the QR code
+        const qrData = JSON.stringify({
+            classId: classId,
+            timestamp: Date.now() // For time-sensitivity
+        });
+        res.json({ success: true, qrData: qrData });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Could not generate QR code' });
+    }
+});
+
 
 module.exports = router;
