@@ -18,8 +18,10 @@
   },
   "homepage": "https://github.com/Surajmishra17/SIH-smart-attendance-#readme",
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
+    "mongoose": "^8.18.2",
     "nodemon": "^3.1.10"
   }
 }

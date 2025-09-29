@@ -10,6 +10,9 @@ app.use('/javascripts', express.static(path.join(__dirname, 'javascripts')))
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json())
 
+const connectDB = require('./db/user.js');
+connectDB();
+
 app.get('/', (req, res) => {
     res.render('front')
 })
