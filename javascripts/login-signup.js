@@ -53,15 +53,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const response = await fetch('/login-signup/login', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password, role })
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email,
+                password,
+                role
+            })
         });
 
         const result = await response.json();
-        alert(result.message); // Show the success message from the server
-        if (result.success) {
-            // Redirect or update UI on successful login
-            console.log('Login successful!');
+        // alert(result.message); // This will still show the "Welcome..." message
+
+        if (result.success && result.redirectUrl) {
+            // If login was successful and a redirect URL is provided, navigate to it
+            window.location.href = result.redirectUrl;
         }
     });
 
