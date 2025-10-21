@@ -1,9 +1,12 @@
+// javascripts/student-dashboard.js gemini 
 document.addEventListener('DOMContentLoaded', () => {
-    const addClassForm = document.getElementById('add-class-form');
+    const joinClassForm = document.getElementById('join-class-form');
     const classList = document.getElementById('class-list');
     const qrScannerModal = document.getElementById('qr-scanner-modal');
     const closeModal = document.getElementById('close-modal');
+    const scannerElement = document.getElementById("qr-scanner"); // Get the scanner DIV
     let html5QrCode;
+    let currentSubjectId = null;
 
     // Elements for notifications and modals
     const notification = document.getElementById('notification');
@@ -15,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Helper function to show on-page notifications
     function showNotification(message, type) {
-        notification.className = 'p-4 mb-4 text-sm rounded-lg'; // Reset classes
+        notification.className = 'p-4 mb-4 text-sm rounded-lg';
         if (type === 'success') {
             notification.classList.add('bg-green-100', 'text-green-800');
         } else {
@@ -24,20 +27,20 @@ document.addEventListener('DOMContentLoaded', () => {
         notificationMessage.textContent = message;
         notification.classList.remove('hidden');
 
-        // Automatically hide the notification after 3 seconds
         setTimeout(() => {
             notification.classList.add('hidden');
-        }, 3000);
+        }, 5000); // Increased time to 5 seconds to read errors
     }
 
-    addClassForm.addEventListener('submit', async (e) => {
+    // Event listener for JOINING a class
+    joinClassForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const className = e.target.elements.className.value;
+        const classId = e.target.elements.classId.value;
 
-        const response = await fetch('/dashboard/student/class', {
+        const response = await fetch('/dashboard/student/join-class', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ className })
+            body: JSON.stringify({ classId })
         });
 
         const result = await response.json();
@@ -47,25 +50,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // **MODIFIED EVENT LISTENER**
+    // Event listener for clicks on the class list
     classList.addEventListener('click', (e) => {
-        // Use .closest() to find the button, no matter if you click the button or the icon inside it
         const scanBtn = e.target.closest('.scan-qr-btn');
         const deleteBtn = e.target.closest('.delete-class-btn');
 
         if (scanBtn) {
-            const classId = scanBtn.dataset.classId;
-            openQrScanner(classId);
+            currentSubjectId = scanBtn.dataset.subjectId;
+            openQrScanner();
         } else if (deleteBtn) {
             classIdToDelete = deleteBtn.dataset.classId;
             deleteConfirmModal.classList.remove('hidden');
         }
     });
 
-    // Handle clicks on the final "Yes, Delete" button
+    // Handle clicks on the final "Yes, Leave" button
     confirmDeleteBtn.addEventListener('click', () => {
         if (classIdToDelete) {
-            deleteClass(classIdToDelete);
+            leaveClass(classIdToDelete);
         }
         deleteConfirmModal.classList.add('hidden');
     });
@@ -76,7 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteConfirmModal.classList.add('hidden');
     });
 
-    async function deleteClass(classId) {
+    // Function to LEAVE a class
+    async function leaveClass(classId) {
         const response = await fetch(`/dashboard/student/class/${classId}`, {
             method: 'DELETE'
         });
@@ -88,38 +91,67 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function openQrScanner(classId) {
+    // ** MODIFIED function to open scanner with ERROR HANDLING **
+    function openQrScanner() {
+        if (!currentSubjectId) {
+            console.error("Scan QR button clicked, but no subject ID was found.");
+            return;
+        }
+
         qrScannerModal.classList.remove('hidden');
+        scannerElement.innerHTML = ""; // Clear any old content
+
+        // Re-create the instance to be safe
         html5QrCode = new Html5Qrcode("qr-scanner");
+
         const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-            html5QrCode.stop().then(ignore => {
-                qrScannerModal.classList.add('hidden');
-                markAttendance(classId, decodedText);
-            }).catch(err => {
-                console.error("Failed to stop QR scanner.", err);
-            });
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(ignore => {
+                    qrScannerModal.classList.add('hidden');
+                    markAttendance(currentSubjectId, decodedText);
+                }).catch(err => {
+                    console.error("Failed to stop QR scanner after success.", err);
+                });
+            }
         };
+
         const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-        html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
+
+        // ** ADDED .catch() FOR DEBUGGING **
+        html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
+            .catch(err => {
+                // This will now show us the exact error
+                console.error("Camera failed to start:", err);
+                const errorMessage = err.message || err;
+                showNotification("Error: Could not start camera. " + errorMessage, "error");
+                scannerElement.innerHTML = `<p class="text-red-500 p-4"><b>Could not start camera.</b><br/>Error: ${errorMessage}</p>`;
+            });
     }
 
+    // ** MODIFIED function to close modal **
     closeModal.addEventListener('click', () => {
         if (html5QrCode && html5QrCode.isScanning) {
-            html5QrCode.stop().catch(err => console.error("Failed to stop QR scanner on close.", err));
+            // Use a catch block here too
+            html5QrCode.stop().catch(err => {
+                // This is not critical, but good to log
+                console.warn("QR scanner stop() failed on close, but this is usually safe.", err);
+            });
         }
         qrScannerModal.classList.add('hidden');
+        currentSubjectId = null;
     });
 
-    async function markAttendance(classId, qrCodeData) {
+    // Function to mark attendance for a SUBJECT
+    async function markAttendance(subjectId, qrCodeData) {
         const response = await fetch('/dashboard/student/attendance', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ classId, qrCodeData })
+            body: JSON.stringify({ subjectId, qrCodeData })
         });
         const result = await response.json();
         showNotification(result.message, result.success ? 'success' : 'error');
         if (result.success) {
-            setTimeout(() => location.reload(), 500);
+            setTimeout(() => location.reload(), 500); // Reload to show new attendance record
         }
     }
 });

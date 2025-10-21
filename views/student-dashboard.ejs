@@ -11,25 +11,6 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-
-        .tooltip {
-            position: relative;
-        }
-
-        .tooltip:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 110%;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #1f2937;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.875rem;
-            white-space: nowrap;
-            z-index: 10;
-        }
     </style>
 </head>
 
@@ -74,57 +55,53 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 space-y-6">
                         <div id="my-classes" class="bg-white p-6 rounded-lg shadow-sm">
-                            <h2 class="text-xl font-semibold mb-4 text-slate-900">My Classes</h2>
-                            <div id="class-list" class="space-y-3">
+                            <h2 class="text-xl font-semibold mb-4 text-slate-900">My Classes & Subjects</h2>
+                            <div id="class-list" class="space-y-4">
                                 <% if(classes.length===0) { %>
-                                    <p class="text-slate-500">You haven't added any classes yet.</p>
+                                    <p class="text-slate-500">You haven't joined any classes yet. Use the "Join Class"
+                                        form to add one.</p>
                                     <% } else { %>
                                         <% classes.forEach(function(classItem) { %>
-                                            <div
-                                                class="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
-                                                <div class="flex items-center">
-                                                    <div
-                                                        class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
-                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                            class="h-6 w-6 text-indigo-600" fill="none"
-                                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                            <path d="M12 14l9-5-9-5-9 5 9 5z" />
-                                                            <path
-                                                                d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-                                                        </svg>
-                                                    </div>
+                                            <div class="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                                                <div class="flex justify-between items-center mb-3">
                                                     <div>
-                                                        <p class="font-semibold text-slate-800">
+                                                        <h3 class="text-lg font-semibold text-slate-800">
                                                             <%= classItem.name %>
-                                                        </p>
+                                                        </h3>
                                                         <p class="text-sm text-slate-500">Teacher: <%= classItem.teacher
                                                                 ? classItem.teacher.name : 'N/A' %>
                                                         </p>
                                                     </div>
+                                                    <button
+                                                        class="delete-class-btn p-2 rounded-full hover:bg-red-100 text-red-600"
+                                                        data-class-id="<%= classItem._id %>" title="Leave Class">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                                            stroke-width="2">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                                        </svg>
+                                                    </button>
                                                 </div>
-                                                <div class="flex items-center space-x-2">
-                                                    <button
-                                                        class="scan-qr-btn tooltip p-2 rounded-full hover:bg-green-100 text-green-600 transition-colors"
-                                                        data-class-id="<%= classItem._id %>" data-tooltip="Scan QR">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6"
-                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                                            stroke-width="2">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                d="M12 4v.01M8 4v.01M4 4v.01M4 8v.01M4 12v.01M4 16v.01M8 20v.01M12 20v.01M16 20v.01M20 20v.01M20 16v.01M20 12v.01M20 8v.01M20 4v.01M16 4v.01M12 8h4v4h-4V8z" />
-                                                        </svg>
-                                                    </button>
-                                                    <button
-                                                        class="delete-class-btn tooltip p-2 rounded-full hover:bg-red-100 text-red-600 transition-colors"
-                                                        data-class-id="<%= classItem._id %>" data-tooltip="Delete">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6"
-                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                                            stroke-width="2">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                    </button>
+                                                <div class="space-y-2">
+                                                    <% if(classItem.subjects.length> 0) { %>
+                                                        <% classItem.subjects.forEach(function(subject) { %>
+                                                            <div
+                                                                class="flex items-center justify-between p-3 bg-white rounded-lg border">
+                                                                <p class="font-medium text-slate-700">
+                                                                    <%= subject.name %>
+                                                                </p>
+                                                                <button
+                                                                    class="scan-qr-btn bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-200"
+                                                                    data-subject-id="<%= subject._id %>">
+                                                                    Scan QR
+                                                                </button>
+                                                            </div>
+                                                            <% }); %>
+                                                                <% } else { %>
+                                                                    <p class="text-sm text-slate-500 italic px-3">No
+                                                                        subjects have been added to this class yet.</p>
+                                                                    <% } %>
                                                 </div>
                                             </div>
                                             <% }); %>
@@ -141,7 +118,7 @@
                                         <% attendance.forEach(function(att) { %>
                                             <div class="grid grid-cols-3 items-center text-sm border-b pb-2">
                                                 <p class="font-medium text-slate-700 col-span-1">
-                                                    <%= att.class.name %>
+                                                    <%= att.subject ? att.subject.name : 'Deleted Subject' %>
                                                 </p>
                                                 <p class="text-slate-500 col-span-1">
                                                     <%= new Date(att.date).toLocaleDateString() %>
@@ -150,7 +127,7 @@
                                                     <span
                                                         class="h-2 w-2 rounded-full mr-2 <%= att.status === 'present' ? 'bg-green-500' : 'bg-red-500' %>"></span>
                                                     <span
-                                                        class="font-medium capitalize <%= att.status === 'present' ? 'text-green-600' : 'text-red-600' %>">
+                                                        classclass="font-medium capitalize <%= att.status === 'present' ? 'text-green-600' : 'text-red-600' %>">
                                                         <%= att.status %>
                                                     </span>
                                                 </div>
@@ -163,17 +140,17 @@
 
                     <div class="lg:col-span-1">
                         <div class="bg-white p-6 rounded-lg shadow-sm">
-                            <h2 class="text-xl font-semibold mb-4 text-slate-900">Add a New Class</h2>
-                            <form id="add-class-form" class="space-y-4">
+                            <h2 class="text-xl font-semibold mb-4 text-slate-900">Join a New Class</h2>
+                            <form id="join-class-form" class="space-y-4">
                                 <div>
-                                    <label for="class-name" class="block text-sm font-medium text-slate-600 mb-1">Class
-                                        Name</label>
-                                    <input type="text" id="class-name" name="className"
-                                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"
-                                        placeholder="e.g., Data Structures" required>
+                                    <label for="class-id" class="block text-sm font-medium text-slate-600 mb-1">Class
+                                        ID</label>
+                                    <input type="text" id="class-id" name="classId"
+                                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                        placeholder="Paste Class ID from teacher" required>
                                 </div>
                                 <button type="submit"
-                                    class="w-full bg-indigo-600 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-indigo-700 transition-transform transform hover:scale-105">Add
+                                    class="w-full bg-indigo-600 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-indigo-700">Join
                                     Class</button>
                             </form>
                         </div>
@@ -196,18 +173,18 @@
     <div id="delete-confirm-modal"
         class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-50">
         <div class="bg-white p-8 rounded-lg shadow-xl text-center max-w-sm">
-            <h2 class="text-xl font-bold mb-4">Would you like to delete this subject?</h2>
-            <p class="text-slate-600 mb-6">This action cannot be undone.</p>
+            <h2 class="text-xl font-bold mb-4">Leave Class?</h2>
+            <p class="text-slate-600 mb-6">Are you sure you want to leave this class?</p>
             <div>
                 <button id="confirm-delete-btn"
-                    class="bg-red-600 text-white px-6 py-2 rounded-lg mr-2 hover:bg-red-700">Yes, Delete</button>
+                    class="bg-red-600 text-white px-6 py-2 rounded-lg mr-2 hover:bg-red-700">Yes, Leave</button>
                 <button id="cancel-delete-btn"
                     class="bg-gray-300 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-400">Cancel</button>
             </div>
         </div>
     </div>
 
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
     <script src="/javascripts/student-dashboard.js"></script>
 </body>
 

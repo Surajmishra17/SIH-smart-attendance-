@@ -1,9 +1,11 @@
+// models/attendancemodel.js
 const mongoose = require('mongoose');
 
 const AttendanceSchema = new mongoose.Schema({
-    class: {
+    // MODIFIED: Changed from 'class' to 'subject'
+    subject: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Class',
+        ref: 'Subject', // Point to the new Subject model
         required: true
     },
     student: {
