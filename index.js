@@ -1,6 +1,7 @@
+const dotenv = require('dotenv');
+dotenv.config();
 const express = require('express')
 const app = express()
-const port = 3000
 const path = require('path')
 const details = require('./routes/login-signup');
 const dashboard = require('./routes/dashboard'); // Import dashboard routes
@@ -19,10 +20,6 @@ app.use(session({
     saveUninitialized: true,
     cookie: { secure: false } // for development; set to true in production with HTTPS
 }));
-
-
-const connectDB = require('./db/user.js');
-connectDB();
 
 app.get('/', (req, res) => {
     res.render('front')
@@ -46,6 +43,13 @@ app.get('/logout', (req, res) => {
 });
 
 
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
+const connectDB = require('./db/user.js');
+connectDB()
+.then(() => {
+    app.listen(process.env.PORT, () => {
+        console.log(`⚙️ Server is running at port : ${process.env.PORT}`);
+    })
+})
+.catch((err) => {
+    console.log("MONGO db connection failed !!! ", err);
 })
