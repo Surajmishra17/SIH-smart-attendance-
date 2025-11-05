@@ -11,11 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let qrCodeInstance = null;
     let timerInterval = null;
 
-    // Attendance Modal
-    const attendanceModal = document.getElementById('attendance-modal');
-    const closeAttendanceModal = document.getElementById('close-attendance-modal');
-    const attendanceListContainer = document.getElementById('attendance-list-container');
-    const attendanceModalTitle = document.getElementById('attendance-modal-title');
+    // --- DELETED ---
+    // All variables related to attendance-modal have been removed
+    // const attendanceModal = document.getElementById('attendance-modal');
+    // const closeAttendanceModal = document.getElementById('close-attendance-modal');
+    // const attendanceListContainer = document.getElementById('attendance-list-container');
+    // const attendanceModalTitle = document.getElementById('attendance-modal-title');
 
     // Notification helper
     function showNotification(message, type) {
@@ -77,7 +78,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const deleteClassBtn = e.target.closest('.delete-class-btn');
             const generateQrBtn = e.target.closest('.generate-qr-btn');
             const deleteSubjectBtn = e.target.closest('.delete-subject-btn');
-            const viewAttendanceBtn = e.target.closest('.view-attendance-btn');
+
+            // --- DELETED ---
+            // const viewAttendanceBtn = e.target.closest('.view-attendance-btn');
 
             // Delete Class
             if (deleteClassBtn) {
@@ -104,13 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // View Attendance
-            if (viewAttendanceBtn) {
-                const subjectId = viewAttendanceBtn.dataset.subjectId;
-                const subjectName = viewAttendanceBtn.dataset.subjectName;
-                viewAttendance(subjectId, subjectName);
-                return;
-            }
+            // --- DELETED ---
+            // The logic for viewAttendanceBtn has been removed
         });
     }
 
@@ -120,9 +118,8 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(timerInterval);
     });
 
-    closeAttendanceModal.addEventListener('click', () => {
-        attendanceModal.classList.add('hidden');
-    });
+    // --- DELETED ---
+    // The closeAttendanceModal listener has been removed
 
     // --- Helper Functions ---
 
@@ -200,35 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // View Attendance for a Subject
-    async function viewAttendance(subjectId, subjectName) {
-        attendanceModalTitle.textContent = `Attendance for: ${subjectName}`;
-        attendanceListContainer.innerHTML = '<p>Loading...</p>';
-        attendanceModal.classList.remove('hidden');
-
-        const response = await fetch(`/dashboard/teacher/subject/${subjectId}/attendance`);
-        const result = await response.json();
-
-        if (result.success) {
-            if (result.attendance.length === 0) {
-                attendanceListContainer.innerHTML = '<p>No students have marked attendance for this subject yet.</p>';
-                return;
-            }
-
-            // Build HTML for student list
-            let studentHtml = '';
-            const students = result.attendance.map(att => att.student);
-            // Simple display:
-            studentHtml = students.map(student =>
-                `<div class="p-2 border-b">
-                    <p class="font-medium">${student.name}</p>
-                    <p class="text-sm text-slate-500">${student.email}</p>
-                </div>`
-            ).join('');
-
-            attendanceListContainer.innerHTML = studentHtml;
-        } else {
-            attendanceListContainer.innerHTML = `<p class="text-red-500">${result.message}</p>`;
-        }
-    }
+    // --- DELETED ---
+    // The viewAttendance function has been removed
 });

@@ -28,24 +28,51 @@ router.use(isAuthenticated, noCache);
 
 // --- STUDENT DASHBOARD ROUTES ---
 
+// *** MODIFIED STUDENT ROUTE ***
 router.get('/student', async (req, res) => {
     try {
         const studentId = req.session.userId;
-        // Find classes student is in, and populate the teacher info and the subjects list
+
+        // 1. Find classes student is in (same as before)
         const classes = await Class.find({ students: studentId })
             .populate('teacher', 'name')
             .populate('subjects'); // <-- Populate subjects
 
-        // Find all attendance for this student
+        // 2. Find all attendance for this student
         const attendance = await Attendance.find({ student: studentId })
             .populate({
                 path: 'subject', // Populate the subject for each attendance record
                 select: 'name'
+            })
+            .sort({ date: 'desc' }); // Sort by most recent first
+
+        // 3. *** NEW: Process attendance to group by date ***
+        const attendanceByDate = {};
+        attendance.forEach(att => {
+            // Create a readable date string (e.g., "October 21, 2025")
+            const dateString = new Date(att.date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                timeZone: 'UTC' // Use UTC to prevent day-shifting
             });
 
+            // Create an array for this date if it doesn't exist
+            if (!attendanceByDate[dateString]) {
+                attendanceByDate[dateString] = [];
+            }
+
+            // Add the record details to the array for that date
+            attendanceByDate[dateString].push({
+                subjectName: att.subject ? att.subject.name : 'Deleted Subject',
+                status: att.status
+            });
+        });
+
+        // 4. Render the page, passing the new grouped object
         res.render('student-dashboard', {
-            classes, // Pass the classes (with subjects)
-            attendance
+            classes,
+            attendanceByDate: attendanceByDate // Pass the new object
         });
     } catch (err) {
         console.error(err);
@@ -53,7 +80,7 @@ router.get('/student', async (req, res) => {
     }
 });
 
-// MODIFIED: This route is now for JOINING a class, not creating one
+// ... (rest of student POST/DELETE routes are unchanged) ...
 router.post('/student/join-class', async (req, res) => {
     try {
         const { classId } = req.body; // Student will provide the Class ID
@@ -80,7 +107,6 @@ router.post('/student/join-class', async (req, res) => {
     }
 });
 
-// MODIFIED: This route now marks attendance for a SUBJECT
 router.post('/student/attendance', async (req, res) => {
     try {
         const { subjectId, qrCodeData } = req.body; // Now expects subjectId
@@ -121,7 +147,6 @@ router.post('/student/attendance', async (req, res) => {
     }
 });
 
-// MODIFIED: This route is now for LEAVING a class
 router.delete('/student/class/:classId', async (req, res) => {
     try {
         const { classId } = req.params;
@@ -139,8 +164,7 @@ router.delete('/student/class/:classId', async (req, res) => {
 
 
 // --- TEACHER DASHBOARD ROUTES ---
-
-// MODIFIED: Now fetches classes AND their subjects
+// ... (All teacher routes remain unchanged) ...
 router.get('/teacher', async (req, res) => {
     try {
         const teacherId = req.session.userId;
@@ -153,7 +177,6 @@ router.get('/teacher', async (req, res) => {
     }
 });
 
-// This route is fine, it creates the "Class" (Group)
 router.post('/teacher/class', async (req, res) => {
     try {
         const { className } = req.body;
@@ -170,7 +193,6 @@ router.post('/teacher/class', async (req, res) => {
     }
 });
 
-// NEW: Route to add a Subject to a Class
 router.post('/teacher/class/:classId/subject', async (req, res) => {
     try {
         const { classId } = req.params;
@@ -197,7 +219,6 @@ router.post('/teacher/class/:classId/subject', async (req, res) => {
     }
 });
 
-// MODIFIED: This route now deletes a Class AND its children (Subjects, Attendance)
 router.delete('/teacher/class/:classId', async (req, res) => {
     try {
         const { classId } = req.params;
@@ -222,7 +243,6 @@ router.delete('/teacher/class/:classId', async (req, res) => {
     }
 });
 
-// NEW: Route to delete a single Subject
 router.delete('/teacher/subject/:subjectId', async (req, res) => {
     try {
         const { subjectId } = req.params;
@@ -249,7 +269,6 @@ router.delete('/teacher/subject/:subjectId', async (req, res) => {
     }
 });
 
-// MODIFIED: This route now generates a QR code for a SUBJECT
 router.post('/teacher/generate-qr', async (req, res) => {
     try {
         const { subjectId } = req.body; // Now expects subjectId
@@ -265,14 +284,47 @@ router.post('/teacher/generate-qr', async (req, res) => {
     }
 });
 
-// NEW: Route to get attendance for a specific subject
-router.get('/teacher/subject/:subjectId/attendance', async (req, res) => {
+router.get('/teacher/subject/:subjectId/attendance-report', async (req, res) => {
     try {
         const { subjectId } = req.params;
-        const attendance = await Attendance.find({ subject: subjectId, status: 'present' })
-            .populate('student', 'name email'); // Get student name and email
 
-        res.json({ success: true, attendance });
+        // 1. Get the Subject details
+        const subject = await Subject.findById(subjectId);
+        if (!subject) {
+            return res.status(404).send('Subject not found');
+        }
+
+        // 2. Get all attendance for this subject, populated with student info
+        const attendanceRecords = await Attendance.find({ subject: subjectId, status: 'present' })
+            .populate('student', 'name email')
+            .sort({ date: 'desc' }); // Sort by most recent first
+
+        // 3. Group attendance by date
+        const attendanceByDate = {};
+        attendanceRecords.forEach(att => {
+            // Use 'en-CA' (YYYY-MM-DD) for a consistent key, or toLocaleDateString for local format
+            const dateString = new Date(att.date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                timeZone: 'UTC' // Use UTC to prevent day-shifting
+            });
+
+            if (!attendanceByDate[dateString]) {
+                attendanceByDate[dateString] = [];
+            }
+            // Only add if student is populated
+            if (att.student) {
+                attendanceByDate[dateString].push(att.student);
+            }
+        });
+
+        // 4. Render the new page with the grouped data
+        res.render('subject-attendance', {
+            subject: subject,
+            attendanceByDate: attendanceByDate
+        });
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'Could not fetch attendance' });

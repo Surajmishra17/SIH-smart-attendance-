@@ -1,4 +1,4 @@
-// javascripts/student-dashboard.js gemini 
+// javascripts/student-dashboard.js
 document.addEventListener('DOMContentLoaded', () => {
     const joinClassForm = document.getElementById('join-class-form');
     const classList = document.getElementById('class-list');
@@ -33,50 +33,58 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event listener for JOINING a class
-    joinClassForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const classId = e.target.elements.classId.value;
+    if (joinClassForm) {
+        joinClassForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const classId = e.target.elements.classId.value;
 
-        const response = await fetch('/dashboard/student/join-class', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ classId })
+            const response = await fetch('/dashboard/student/join-class', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ classId })
+            });
+
+            const result = await response.json();
+            showNotification(result.message, result.success ? 'success' : 'error');
+            if (result.success) {
+                setTimeout(() => location.reload(), 500);
+            }
         });
-
-        const result = await response.json();
-        showNotification(result.message, result.success ? 'success' : 'error');
-        if (result.success) {
-            setTimeout(() => location.reload(), 500);
-        }
-    });
+    }
 
     // Event listener for clicks on the class list
-    classList.addEventListener('click', (e) => {
-        const scanBtn = e.target.closest('.scan-qr-btn');
-        const deleteBtn = e.target.closest('.delete-class-btn');
+    if (classList) {
+        classList.addEventListener('click', (e) => {
+            const scanBtn = e.target.closest('.scan-qr-btn');
+            const deleteBtn = e.target.closest('.delete-class-btn');
 
-        if (scanBtn) {
-            currentSubjectId = scanBtn.dataset.subjectId;
-            openQrScanner();
-        } else if (deleteBtn) {
-            classIdToDelete = deleteBtn.dataset.classId;
-            deleteConfirmModal.classList.remove('hidden');
-        }
-    });
+            if (scanBtn) {
+                currentSubjectId = scanBtn.dataset.subjectId;
+                openQrScanner();
+            } else if (deleteBtn) {
+                classIdToDelete = deleteBtn.dataset.classId;
+                deleteConfirmModal.classList.remove('hidden');
+            }
+        });
+    }
 
     // Handle clicks on the final "Yes, Leave" button
-    confirmDeleteBtn.addEventListener('click', () => {
-        if (classIdToDelete) {
-            leaveClass(classIdToDelete);
-        }
-        deleteConfirmModal.classList.add('hidden');
-    });
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', () => {
+            if (classIdToDelete) {
+                leaveClass(classIdToDelete);
+            }
+            deleteConfirmModal.classList.add('hidden');
+        });
+    }
 
     // Handle clicks on the "Cancel" button
-    cancelDeleteBtn.addEventListener('click', () => {
-        classIdToDelete = null;
-        deleteConfirmModal.classList.add('hidden');
-    });
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', () => {
+            classIdToDelete = null;
+            deleteConfirmModal.classList.add('hidden');
+        });
+    }
 
     // Function to LEAVE a class
     async function leaveClass(classId) {
@@ -129,17 +137,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ** MODIFIED function to close modal **
-    closeModal.addEventListener('click', () => {
-        if (html5QrCode && html5QrCode.isScanning) {
-            // Use a catch block here too
-            html5QrCode.stop().catch(err => {
-                // This is not critical, but good to log
-                console.warn("QR scanner stop() failed on close, but this is usually safe.", err);
-            });
-        }
-        qrScannerModal.classList.add('hidden');
-        currentSubjectId = null;
-    });
+    if (closeModal) {
+        closeModal.addEventListener('click', () => {
+            if (html5QrCode && html5QrCode.isScanning) {
+                // Use a catch block here too
+                html5QrCode.stop().catch(err => {
+                    // This is not critical, but good to log
+                    console.warn("QR scanner stop() failed on close, but this is usually safe.", err);
+                });
+            }
+            qrScannerModal.classList.add('hidden');
+            currentSubjectId = null;
+        });
+    }
 
     // Function to mark attendance for a SUBJECT
     async function markAttendance(subjectId, qrCodeData) {
@@ -153,5 +163,42 @@ document.addEventListener('DOMContentLoaded', () => {
         if (result.success) {
             setTimeout(() => location.reload(), 500); // Reload to show new attendance record
         }
+    }
+
+    // *** NEW: Accordion logic for Attendance History ***
+    const accordion = document.getElementById('attendance-accordion');
+    if (accordion) {
+        accordion.addEventListener('click', (e) => {
+            const button = e.target.closest('.date-toggle-btn');
+            if (!button) return;
+
+            const targetId = button.dataset.target;
+            const targetContent = document.getElementById(targetId);
+            const icon = button.querySelector('.accordion-icon');
+
+            if (targetContent) {
+                const isOpen = targetContent.classList.contains('open');
+
+                // Close all others
+                document.querySelectorAll('.accordion-content.open').forEach(openContent => {
+                    if (openContent.id !== targetId) {
+                        openContent.classList.remove('open');
+                        const openButton = document.querySelector(`[data-target="${openContent.id}"]`);
+                        if (openButton) {
+                            openButton.querySelector('.accordion-icon').classList.remove('rotate-180');
+                        }
+                    }
+                });
+
+                // Toggle the clicked one
+                if (isOpen) {
+                    targetContent.classList.remove('open');
+                    if (icon) icon.classList.remove('rotate-180');
+                } else {
+                    targetContent.classList.add('open');
+                    if (icon) icon.classList.add('rotate-180');
+                }
+            }
+        });
     }
 });
