@@ -80,7 +80,7 @@ router.get('/student', async (req, res) => {
     }
 });
 
-// ... (rest of student POST/DELETE routes are unchanged) ...
+
 router.post('/student/join-class', async (req, res) => {
     try {
         const { classId } = req.body; // Student will provide the Class ID
@@ -164,7 +164,7 @@ router.delete('/student/class/:classId', async (req, res) => {
 
 
 // --- TEACHER DASHBOARD ROUTES ---
-// ... (All teacher routes remain unchanged) ...
+
 router.get('/teacher', async (req, res) => {
     try {
         const teacherId = req.session.userId;
@@ -284,6 +284,7 @@ router.post('/teacher/generate-qr', async (req, res) => {
     }
 });
 
+// *** NEW ROUTE FOR FULL-PAGE ATTENDANCE REPORT ***
 router.get('/teacher/subject/:subjectId/attendance-report', async (req, res) => {
     try {
         const { subjectId } = req.params;

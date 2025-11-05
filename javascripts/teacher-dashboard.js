@@ -1,5 +1,24 @@
 // javascripts/teacher-dashboard.js
 document.addEventListener('DOMContentLoaded', () => {
+
+    // --- NEW Mobile Menu Logic ---
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('menu-overlay');
+
+    if (menuBtn && sidebar && overlay) {
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+    }
+    // --- End of new logic ---
+
     const addClassForm = document.getElementById('add-class-form');
     const classList = document.getElementById('class-list');
 
@@ -10,13 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const qrTimer = document.getElementById('qr-timer');
     let qrCodeInstance = null;
     let timerInterval = null;
-
-    // --- DELETED ---
-    // All variables related to attendance-modal have been removed
-    // const attendanceModal = document.getElementById('attendance-modal');
-    // const closeAttendanceModal = document.getElementById('close-attendance-modal');
-    // const attendanceListContainer = document.getElementById('attendance-list-container');
-    // const attendanceModalTitle = document.getElementById('attendance-modal-title');
 
     // Notification helper
     function showNotification(message, type) {
@@ -79,9 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const generateQrBtn = e.target.closest('.generate-qr-btn');
             const deleteSubjectBtn = e.target.closest('.delete-subject-btn');
 
-            // --- DELETED ---
-            // const viewAttendanceBtn = e.target.closest('.view-attendance-btn');
-
             // Delete Class
             if (deleteClassBtn) {
                 const classId = deleteClassBtn.dataset.classId;
@@ -106,9 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 return;
             }
-
-            // --- DELETED ---
-            // The logic for viewAttendanceBtn has been removed
         });
     }
 
@@ -117,9 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
         qrCodeModal.classList.add('hidden');
         clearInterval(timerInterval);
     });
-
-    // --- DELETED ---
-    // The closeAttendanceModal listener has been removed
 
     // --- Helper Functions ---
 
@@ -196,7 +199,4 @@ document.addEventListener('DOMContentLoaded', () => {
             showNotification(result.message, 'error');
         }
     }
-
-    // --- DELETED ---
-    // The viewAttendance function has been removed
 });

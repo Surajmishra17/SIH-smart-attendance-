@@ -1,5 +1,24 @@
 // javascripts/student-dashboard.js
 document.addEventListener('DOMContentLoaded', () => {
+
+    // --- NEW Mobile Menu Logic ---
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('menu-overlay');
+
+    if (menuBtn && sidebar && overlay) {
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+    }
+    // --- End of new logic ---
+
     const joinClassForm = document.getElementById('join-class-form');
     const classList = document.getElementById('class-list');
     const qrScannerModal = document.getElementById('qr-scanner-modal');
@@ -123,7 +142,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        // Config for QR scanner
+        const config = {
+            fps: 10,
+            qrbox: (viewfinderWidth, viewfinderHeight) => {
+                const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                const qrBoxSize = Math.max(250, minEdge * 0.7); // Use 70% of the smallest edge, but at least 250px
+                return { width: qrBoxSize, height: qrBoxSize };
+            }
+        };
 
         // ** ADDED .catch() FOR DEBUGGING **
         html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
@@ -131,8 +158,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 // This will now show us the exact error
                 console.error("Camera failed to start:", err);
                 const errorMessage = err.message || err;
+                // Try to find the inner scanner element to show the error
+                const scannerDiv = document.getElementById("qr-scanner");
+                if (scannerDiv) {
+                    scannerDiv.innerHTML = `<p class="text-red-500 p-4"><b>Could not start camera.</b><br/>Error: ${errorMessage}<br/><br/>Please grant camera permissions and refresh the page.</p>`;
+                }
                 showNotification("Error: Could not start camera. " + errorMessage, "error");
-                scannerElement.innerHTML = `<p class="text-red-500 p-4"><b>Could not start camera.</b><br/>Error: ${errorMessage}</p>`;
             });
     }
 

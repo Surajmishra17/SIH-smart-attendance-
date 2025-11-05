@@ -1,5 +1,26 @@
 // javascripts/subject-attendance.js
 document.addEventListener('DOMContentLoaded', () => {
+
+    // --- NEW Mobile Menu Logic ---
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('menu-overlay');
+
+    if (menuBtn && sidebar && overlay) {
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+    }
+    // --- End of new logic ---
+
+
+    // --- Accordion Logic ---
     const accordion = document.getElementById('attendance-accordion');
 
     if (accordion) {
