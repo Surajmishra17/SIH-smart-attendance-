@@ -1,7 +1,7 @@
 // javascripts/student-dashboard.js
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- NEW Mobile Menu Logic ---
+    // --- Mobile Menu Logic ---
     const menuBtn = document.getElementById('mobile-menu-btn');
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('menu-overlay');
@@ -17,17 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
             overlay.classList.add('hidden');
         });
     }
-    // --- End of new logic ---
 
     const joinClassForm = document.getElementById('join-class-form');
     const classList = document.getElementById('class-list');
     const qrScannerModal = document.getElementById('qr-scanner-modal');
     const closeModal = document.getElementById('close-modal');
-    const scannerElement = document.getElementById("qr-scanner"); // Get the scanner DIV
+    const scannerElement = document.getElementById("qr-scanner");
     let html5QrCode;
     let currentSubjectId = null;
 
-    // Elements for notifications and modals
     const notification = document.getElementById('notification');
     const notificationMessage = document.getElementById('notification-message');
     const deleteConfirmModal = document.getElementById('delete-confirm-modal');
@@ -35,7 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
     let classIdToDelete = null;
 
-    // Helper function to show on-page notifications
     function showNotification(message, type) {
         notification.className = 'p-4 mb-4 text-sm rounded-lg';
         if (type === 'success') {
@@ -48,10 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setTimeout(() => {
             notification.classList.add('hidden');
-        }, 5000); // Increased time to 5 seconds to read errors
+        }, 5000);
     }
 
-    // Event listener for JOINING a class
     if (joinClassForm) {
         joinClassForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -71,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Event listener for clicks on the class list
     if (classList) {
         classList.addEventListener('click', (e) => {
             const scanBtn = e.target.closest('.scan-qr-btn');
@@ -87,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Handle clicks on the final "Yes, Leave" button
     if (confirmDeleteBtn) {
         confirmDeleteBtn.addEventListener('click', () => {
             if (classIdToDelete) {
@@ -97,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Handle clicks on the "Cancel" button
     if (cancelDeleteBtn) {
         cancelDeleteBtn.addEventListener('click', () => {
             classIdToDelete = null;
@@ -105,7 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Function to LEAVE a class
     async function leaveClass(classId) {
         const response = await fetch(`/dashboard/student/class/${classId}`, {
             method: 'DELETE'
@@ -118,17 +110,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ** MODIFIED function to open scanner with ERROR HANDLING **
     function openQrScanner() {
-        if (!currentSubjectId) {
-            console.error("Scan QR button clicked, but no subject ID was found.");
-            return;
-        }
+        if (!currentSubjectId) return;
 
         qrScannerModal.classList.remove('hidden');
-        scannerElement.innerHTML = ""; // Clear any old content
-
-        // Re-create the instance to be safe
+        scannerElement.innerHTML = "";
         html5QrCode = new Html5Qrcode("qr-scanner");
 
         const qrCodeSuccessCallback = (decodedText, decodedResult) => {
@@ -136,53 +122,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 html5QrCode.stop().then(ignore => {
                     qrScannerModal.classList.add('hidden');
                     markAttendance(currentSubjectId, decodedText);
-                }).catch(err => {
-                    console.error("Failed to stop QR scanner after success.", err);
-                });
+                }).catch(err => console.error(err));
             }
         };
 
-        // Config for QR scanner
-        const config = {
-            fps: 10,
-            qrbox: (viewfinderWidth, viewfinderHeight) => {
-                const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-                const qrBoxSize = Math.max(250, minEdge * 0.7); // Use 70% of the smallest edge, but at least 250px
-                return { width: qrBoxSize, height: qrBoxSize };
-            }
-        };
-
-        // ** ADDED .catch() FOR DEBUGGING **
-        html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
+        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: (w, h) => ({ width: 250, height: 250 }) }, qrCodeSuccessCallback)
             .catch(err => {
-                // This will now show us the exact error
-                console.error("Camera failed to start:", err);
-                const errorMessage = err.message || err;
-                // Try to find the inner scanner element to show the error
-                const scannerDiv = document.getElementById("qr-scanner");
-                if (scannerDiv) {
-                    scannerDiv.innerHTML = `<p class="text-red-500 p-4"><b>Could not start camera.</b><br/>Error: ${errorMessage}<br/><br/>Please grant camera permissions and refresh the page.</p>`;
-                }
-                showNotification("Error: Could not start camera. " + errorMessage, "error");
+                scannerElement.innerHTML = `<p class="text-red-500 p-4">Camera Error: ${err}</p>`;
+                showNotification("Camera Error: " + err, "error");
             });
     }
 
-    // ** MODIFIED function to close modal **
     if (closeModal) {
         closeModal.addEventListener('click', () => {
             if (html5QrCode && html5QrCode.isScanning) {
-                // Use a catch block here too
-                html5QrCode.stop().catch(err => {
-                    // This is not critical, but good to log
-                    console.warn("QR scanner stop() failed on close, but this is usually safe.", err);
-                });
+                html5QrCode.stop().catch(err => console.warn(err));
             }
             qrScannerModal.classList.add('hidden');
             currentSubjectId = null;
         });
     }
 
-    // Function to mark attendance for a SUBJECT
     async function markAttendance(subjectId, qrCodeData) {
         const response = await fetch('/dashboard/student/attendance', {
             method: 'POST',
@@ -192,11 +152,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const result = await response.json();
         showNotification(result.message, result.success ? 'success' : 'error');
         if (result.success) {
-            setTimeout(() => location.reload(), 500); // Reload to show new attendance record
+            setTimeout(() => location.reload(), 500);
         }
     }
 
-    // *** NEW: Accordion logic for Attendance History ***
     const accordion = document.getElementById('attendance-accordion');
     if (accordion) {
         accordion.addEventListener('click', (e) => {
@@ -209,19 +168,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (targetContent) {
                 const isOpen = targetContent.classList.contains('open');
-
-                // Close all others
                 document.querySelectorAll('.accordion-content.open').forEach(openContent => {
                     if (openContent.id !== targetId) {
                         openContent.classList.remove('open');
                         const openButton = document.querySelector(`[data-target="${openContent.id}"]`);
-                        if (openButton) {
-                            openButton.querySelector('.accordion-icon').classList.remove('rotate-180');
-                        }
+                        if (openButton) openButton.querySelector('.accordion-icon').classList.remove('rotate-180');
                     }
                 });
 
-                // Toggle the clicked one
                 if (isOpen) {
                     targetContent.classList.remove('open');
                     if (icon) icon.classList.remove('rotate-180');

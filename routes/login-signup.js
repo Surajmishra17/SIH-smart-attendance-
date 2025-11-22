@@ -8,7 +8,7 @@ router.get('/', (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-    const { email, password, role } = req.body;
+    const { email, password, role, deviceId } = req.body;
 
     try {
         const user = await User.findOne({ email, role });
@@ -23,14 +23,26 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid credentials. Incorrect password.' });
         }
 
-        // Set user session
+        // [SECURITY] Device Locking Logic
+        if (role === 'student') {
+            if (!user.deviceId) {
+                // First time login: Lock to this device
+                user.deviceId = deviceId;
+                await user.save();
+            } else if (user.deviceId !== deviceId) {
+                // Mismatch: Block login
+                return res.status(403).json({
+                    success: false,
+                    message: 'Security Alert: You are attempting to login from an unregistered device. To prevent proxy attendance, you must use your registered phone.'
+                });
+            }
+        }
+
         req.session.userId = user._id;
 
-        // Redirect based on role
         if (role === 'student') {
             res.json({ success: true, message: `Welcome back, ${user.name}!`, redirectUrl: '/dashboard/student' });
         } else if (role === 'teacher') {
-            // Placeholder for teacher dashboard
             res.json({ success: true, message: `Welcome back, ${user.name}!`, redirectUrl: '/dashboard/teacher' });
         }
 
@@ -41,7 +53,7 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/signup', async (req, res) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, deviceId } = req.body;
 
     try {
         let user = await User.findOne({ email });
@@ -54,12 +66,13 @@ router.post('/signup', async (req, res) => {
             name,
             email,
             password,
-            role
+            role,
+            deviceId // [SECURITY] Register device immediately
         });
 
         await user.save();
 
-        res.json({ success: true, message: `Account created for ${name}! You can now log in.` });
+        res.json({ success: true, message: `Account created for ${name}! Your device has been registered.` });
 
     } catch (err) {
         console.error(err.message);

@@ -9,7 +9,7 @@ const UserSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true, // No two users can have the same email
+        unique: true,
         lowercase: true
     },
     password: {
@@ -18,13 +18,17 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['student', 'teacher'], // Role must be either 'student' or 'teacher'
+        enum: ['student', 'teacher'],
         required: true
+    },
+    // [SECURITY] Device Lock Field
+    // Stores the unique ID of the student's trusted device.
+    deviceId: {
+        type: String,
+        default: null
     }
 });
 
-// This function runs before a new user is saved to the database.
-// It 'hashes' the password, turning it into a long, secure string.
 UserSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {
         return next();
@@ -34,5 +38,4 @@ UserSchema.pre('save', async function (next) {
     next();
 });
 
-// This creates the 'User' model from the schema and exports it.
 module.exports = mongoose.model('User', UserSchema);

@@ -6,12 +6,34 @@ document.addEventListener('DOMContentLoaded', function () {
     const loginForm = document.getElementById('login-form');
     const signupForm = document.getElementById('signup-form');
 
-    // Function to switch between login and signup forms
+    // [NEW] Error Elements
+    const loginErrorBox = document.getElementById('login-error-message');
+    const loginErrorText = document.getElementById('login-error-text');
+
+    function getDeviceId() {
+        let deviceId = localStorage.getItem('attensys_device_id');
+        if (!deviceId) {
+            if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+                deviceId = crypto.randomUUID();
+            } else {
+                deviceId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            }
+            localStorage.setItem('attensys_device_id', deviceId);
+        }
+        return deviceId;
+    }
+
     const toggleForms = () => {
         loginWrapper.classList.toggle('form-hidden');
         loginWrapper.classList.toggle('form-active');
         signupWrapper.classList.toggle('form-hidden');
         signupWrapper.classList.toggle('form-active');
+
+        // Hide error message when switching forms
+        if (loginErrorBox) loginErrorBox.classList.add('hidden');
     };
 
     showSignupLink.addEventListener('click', (e) => {
@@ -24,7 +46,6 @@ document.addEventListener('DOMContentLoaded', function () {
         toggleForms();
     });
 
-    // Handle Role Selection and sync between forms
     const roleSelectors = document.querySelectorAll('.role-selector');
     roleSelectors.forEach(selector => {
         selector.addEventListener('click', function (e) {
@@ -43,35 +64,43 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // FIX: Replaced the demo alert with actual form submission logic using fetch.
+    // LOGIN FORM SUBMISSION
     loginForm.addEventListener('submit', async function (e) {
         e.preventDefault();
+
+        // Reset error message state
+        loginErrorBox.classList.add('hidden');
+        loginErrorText.textContent = '';
 
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
         const role = loginForm.querySelector('.role-selector .active').dataset.role;
+        const deviceId = getDeviceId();
 
-        const response = await fetch('/login-signup/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email,
-                password,
-                role
-            })
-        });
+        try {
+            const response = await fetch('/login-signup/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password, role, deviceId })
+            });
 
-        const result = await response.json();
-        // alert(result.message); // This will still show the "Welcome..." message
+            const result = await response.json();
 
-        if (result.success && result.redirectUrl) {
-            // If login was successful and a redirect URL is provided, navigate to it
-            window.location.href = result.redirectUrl;
+            if (result.success && result.redirectUrl) {
+                window.location.href = result.redirectUrl;
+            } else {
+                // [NEW] Show On-Screen Error instead of Alert
+                loginErrorText.textContent = result.message;
+                loginErrorBox.classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            loginErrorText.textContent = "An unexpected error occurred. Please try again.";
+            loginErrorBox.classList.remove('hidden');
         }
     });
 
+    // SIGNUP FORM SUBMISSION
     signupForm.addEventListener('submit', async function (e) {
         e.preventDefault();
 
@@ -79,19 +108,23 @@ document.addEventListener('DOMContentLoaded', function () {
         const email = document.getElementById('signup-email').value;
         const password = document.getElementById('signup-password').value;
         const role = signupForm.querySelector('.role-selector .active').dataset.role;
+        const deviceId = getDeviceId();
 
-        const response = await fetch('/login-signup/signup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password, role })
-        });
+        try {
+            const response = await fetch('/login-signup/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password, role, deviceId })
+            });
 
-        const result = await response.json();
-        alert(result.message); // Show the success message from the server
-        if (result.success) {
-            // Redirect or switch to login form on successful signup
-            console.log('Signup successful!');
-            toggleForms(); // Switch to login view after signup
+            const result = await response.json();
+            alert(result.message); // Keeping alert for Signup success/fail as requested
+            if (result.success) {
+                toggleForms();
+            }
+        } catch (error) {
+            console.error('Signup error:', error);
+            alert("An error occurred during signup.");
         }
     });
 });

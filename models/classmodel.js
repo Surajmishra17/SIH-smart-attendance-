@@ -10,11 +10,12 @@ const ClassSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
+    // [CRITICAL FIX] This array was missing! 
+    // It stores the list of students so we can manage their device locks.
     students: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }],
-    // NEW FIELD: Add a list of subjects that belong to this class
     subjects: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Subject'
