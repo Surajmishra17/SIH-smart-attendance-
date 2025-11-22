@@ -6,6 +6,7 @@ const path = require('path')
 const details = require('./routes/login-signup');
 const dashboard = require('./routes/dashboard'); // Import dashboard routes
 const session = require('express-session'); // For session management
+const settings = require('./routes/settings');
 
 app.set('view engine', 'ejs')
 app.use(express.static(path.join(__dirname, 'public')))
@@ -27,6 +28,7 @@ app.get('/', (req, res) => {
 
 app.use('/login-signup', details);
 app.use('/dashboard', dashboard); // Use the dashboard routes
+app.use('/settings', settings);
 
 // NEW LOGOUT ROUTE
 app.get('/logout', (req, res) => {
