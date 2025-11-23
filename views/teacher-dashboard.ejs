@@ -14,7 +14,6 @@
             background-color: #f8fafc;
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -36,9 +35,7 @@
 </head>
 
 <body class="bg-slate-50 text-slate-800 antialiased">
-
     <div class="relative min-h-screen md:flex">
-
         <aside id="sidebar"
             class="w-72 bg-white border-r border-slate-200 shadow-[4px_0_24px_rgba(0,0,0,0.02)] flex-shrink-0 fixed z-30 inset-y-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out">
             <div class="p-8 flex items-center justify-center border-b border-slate-100">
@@ -64,7 +61,6 @@
             class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-20 hidden md:hidden transition-opacity"></div>
 
         <div class="flex-1 flex flex-col overflow-hidden w-full h-screen">
-
             <header
                 class="bg-white/80 backdrop-blur-md border-b border-slate-200 p-4 lg:px-8 flex justify-between items-center sticky top-0 z-20">
                 <div class="flex items-center gap-4">
@@ -75,12 +71,10 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
                         </svg>
                     </button>
-
                     <div>
                         <h1 class="text-xl lg:text-2xl font-bold text-slate-800">Teacher Dashboard</h1>
                     </div>
                 </div>
-
                 <div class="flex items-center space-x-2 sm:space-x-4">
                     <a href="/settings"
                         class="p-2 rounded-full text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all flex items-center group">
@@ -93,9 +87,7 @@
                         </svg>
                         <span class="hidden sm:inline font-medium">Settings</span>
                     </a>
-
                     <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
-
                     <a href="/logout"
                         class="flex items-center space-x-2 rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors">
                         <span>Logout</span>
@@ -110,201 +102,228 @@
                     <span class="font-semibold text-base" id="notification-message"></span>
                 </div>
 
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                    <div class="xl:col-span-2 space-y-8">
-                        <div id="class-list" class="space-y-8">
-                            <% if(classes.length===0) { %>
+                <% if (locals.resetRequests && resetRequests.length> 0) { %>
+                    <div id="requests-container"
+                        class="mb-8 p-6 bg-amber-50 rounded-2xl border border-amber-200 shadow-sm">
+                        <h2 class="text-lg font-bold text-amber-900 mb-4 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            Pending Device Unlink Requests
+                        </h2>
+                        <div class="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                            <% resetRequests.forEach(student=> { %>
                                 <div
-                                    class="bg-white p-10 rounded-2xl shadow-sm border border-dashed border-slate-300 text-center">
-                                    <div
-                                        class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                                        </svg>
+                                    class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 rounded-xl border border-amber-100 shadow-sm">
+                                    <div class="mb-3 sm:mb-0">
+                                        <p class="font-bold text-slate-800">
+                                            <%= student.name %>
+                                        </p>
+                                        <p class="text-xs text-slate-500">
+                                            <%= student.email %>
+                                        </p>
+                                        <p class="text-xs text-amber-600 mt-1 font-semibold">Device Linked</p>
                                     </div>
-                                    <p class="text-slate-500 font-medium text-lg">No classes created yet.</p>
-                                    <p class="text-slate-400 text-sm mt-1">Use the "Add Class" form to get started.</p>
+                                    <button
+                                        class="reset-device-btn bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-amber-700 shadow-lg shadow-amber-500/20 transition-all"
+                                        data-student-id="<%= student._id %>">
+                                        Approve Reset
+                                    </button>
                                 </div>
-                                <% } else { %>
-                                    <% classes.forEach(function(classItem) { %>
+                                <% }) %>
+                        </div>
+                    </div>
+                    <% } %>
+
+                        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                            <div class="xl:col-span-2 space-y-8">
+                                <div id="class-list" class="space-y-8">
+                                    <% if(classes.length===0) { %>
                                         <div
-                                            class="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden group hover:border-indigo-100 transition-colors">
+                                            class="bg-white p-10 rounded-2xl shadow-sm border border-dashed border-slate-300 text-center">
                                             <div
-                                                class="flex justify-between items-start p-6 bg-gradient-to-r from-white to-slate-50 border-b border-slate-100">
-                                                <div>
-                                                    <div class="flex items-center gap-3 mb-1">
-                                                        <h2 class="text-2xl font-bold text-slate-800">
-                                                            <%= classItem.name %>
-                                                        </h2>
-                                                    </div>
-                                                    <div class="flex items-center text-sm text-slate-500">
-                                                        <span class="mr-2">Class ID:</span>
-                                                        <code
-                                                            class="bg-slate-100 text-slate-600 px-2 py-1 rounded font-mono text-xs font-semibold select-all"><%= classItem._id %></code>
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    class="delete-class-btn p-2 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors"
-                                                    data-class-id="<%= classItem._id %>" title="Delete Class">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
-                                                        viewBox="0 0 20 20" fill="currentColor">
-                                                        <path fill-rule="evenodd"
-                                                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                                            clip-rule="evenodd" />
-                                                    </svg>
-                                                </button>
+                                                class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400"
+                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                                </svg>
                                             </div>
-
-                                            <div class="p-6">
-                                                <div class="space-y-3 mb-6">
-                                                    <% if(classItem.subjects.length> 0) { %>
-                                                        <% classItem.subjects.forEach(function(subject) { %>
-                                                            <div
-                                                                class="flex flex-col md:flex-row items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 hover:shadow-md transition-all">
-                                                                <div
-                                                                    class="flex items-center mb-3 md:mb-0 w-full md:w-auto">
-                                                                    <div
-                                                                        class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600 mr-3 flex-shrink-0">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                            class="h-5 w-5" fill="none"
-                                                                            viewBox="0 0 24 24" stroke="currentColor">
-                                                                            <path stroke-linecap="round"
-                                                                                stroke-linejoin="round" stroke-width="2"
-                                                                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                                                        </svg>
-                                                                    </div>
-                                                                    <p
-                                                                        class="font-bold text-slate-800 text-lg md:text-base truncate">
-                                                                        <%= subject.name %>
-                                                                    </p>
-                                                                </div>
-
-                                                                <div
-                                                                    class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
-                                                                    <a href="/dashboard/teacher/subject/<%= subject._id %>/attendance-report"
-                                                                        class="flex-1 md:flex-none text-center bg-blue-50 text-blue-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-100 transition-colors">
-                                                                        View
-                                                                    </a>
-                                                                    <button
-                                                                        class="generate-qr-btn flex-1 md:flex-none bg-emerald-50 text-emerald-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-100 transition-colors flex items-center justify-center gap-1"
-                                                                        data-subject-id="<%= subject._id %>">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                            class="h-4 w-4" fill="none"
-                                                                            viewBox="0 0 24 24" stroke="currentColor">
-                                                                            <path stroke-linecap="round"
-                                                                                stroke-linejoin="round" stroke-width="2"
-                                                                                d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                                                                        </svg>
-                                                                        QR Code
-                                                                    </button>
-
-                                                                    <button
-                                                                        class="manual-attendance-btn flex-1 md:flex-none bg-amber-50 text-amber-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-amber-100 transition-colors"
-                                                                        data-subject-id="<%= subject._id %>"
-                                                                        data-subject-name="<%= subject.name %>">
-                                                                        Manual
-                                                                    </button>
-
-                                                                    <button
-                                                                        class="delete-subject-btn w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors"
-                                                                        data-subject-id="<%= subject._id %>"
-                                                                        title="Delete Subject">&times;</button>
-                                                                </div>
-                                                            </div>
-                                                            <% }); %>
-                                                                <% } else { %>
-                                                                    <div
-                                                                        class="text-center py-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                                                                        <p class="text-slate-400 text-sm italic">No
-                                                                            subjects added yet.</p>
-                                                                    </div>
-                                                                    <% } %>
-                                                </div>
-
-                                                <div class="flex gap-2 items-center mb-6">
-                                                    <form class="add-subject-form flex-1 flex gap-2"
-                                                        data-class-id="<%= classItem._id %>">
-                                                        <input type="text" name="subjectName"
-                                                            class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all outline-none"
-                                                            placeholder="Add new subject..." required>
-                                                        <button type="submit"
-                                                            class="bg-slate-800 text-white font-semibold py-2.5 px-6 rounded-xl hover:bg-indigo-600 text-sm shadow-md transition-all active:scale-95">
-                                                            Add
-                                                        </button>
-                                                    </form>
-                                                </div>
-
-                                                <div
-                                                    class="flex justify-between items-center pt-4 border-t border-slate-100">
-                                                    <div class="flex items-center text-slate-500">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2"
-                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                                        </svg>
-                                                        <span class="text-sm font-semibold">Total Students: <%=
-                                                                (classItem.students || []).length %></span>
-                                                    </div>
-                                                    <button
-                                                        class="manage-students-btn text-indigo-600 hover:text-indigo-800 text-sm font-bold flex items-center hover:underline"
-                                                        data-students="<%= JSON.stringify(classItem.students || []) %>">
-                                                        Manage Students & Locks
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1"
-                                                            viewBox="0 0 20 20" fill="currentColor">
-                                                            <path fill-rule="evenodd"
-                                                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                                                clip-rule="evenodd" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </div>
+                                            <p class="text-slate-500 font-medium text-lg">No classes created yet.</p>
+                                            <p class="text-slate-400 text-sm mt-1">Use the "Add Class" form to get
+                                                started.</p>
                                         </div>
-                                        <% }); %>
-                                            <% } %>
-                        </div>
-                    </div>
-
-                    <div class="xl:col-span-1">
-                        <div
-                            class="bg-white p-6 rounded-2xl shadow-lg shadow-indigo-100/50 border border-indigo-50 sticky top-28">
-                            <div class="flex items-center mb-6">
-                                <div class="bg-indigo-600 rounded-full p-2 mr-3 shadow-lg shadow-indigo-500/30">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                    </svg>
+                                        <% } else { %>
+                                            <% classes.forEach(function(classItem) { %>
+                                                <div
+                                                    class="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden group hover:border-indigo-100 transition-colors">
+                                                    <div
+                                                        class="flex justify-between items-start p-6 bg-gradient-to-r from-white to-slate-50 border-b border-slate-100">
+                                                        <div>
+                                                            <div class="flex items-center gap-3 mb-1">
+                                                                <h2 class="text-2xl font-bold text-slate-800">
+                                                                    <%= classItem.name %>
+                                                                </h2>
+                                                            </div>
+                                                            <div class="flex items-center text-sm text-slate-500">
+                                                                <span class="mr-2">Class ID:</span>
+                                                                <code
+                                                                    class="bg-slate-100 text-slate-600 px-2 py-1 rounded font-mono text-xs font-semibold select-all"><%= classItem._id %></code>
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            class="delete-class-btn p-2 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                                            data-class-id="<%= classItem._id %>" title="Delete Class">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                                viewBox="0 0 20 20" fill="currentColor">
+                                                                <path fill-rule="evenodd"
+                                                                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                                    clip-rule="evenodd" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                    <div class="p-6">
+                                                        <div class="space-y-3 mb-6">
+                                                            <% if(classItem.subjects.length> 0) { %>
+                                                                <% classItem.subjects.forEach(function(subject) { %>
+                                                                    <div
+                                                                        class="flex flex-col md:flex-row items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 hover:shadow-md transition-all">
+                                                                        <div
+                                                                            class="flex items-center mb-3 md:mb-0 w-full md:w-auto">
+                                                                            <div
+                                                                                class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600 mr-3 flex-shrink-0">
+                                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                    class="h-5 w-5" fill="none"
+                                                                                    viewBox="0 0 24 24"
+                                                                                    stroke="currentColor">
+                                                                                    <path stroke-linecap="round"
+                                                                                        stroke-linejoin="round"
+                                                                                        stroke-width="2"
+                                                                                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                                                                </svg>
+                                                                            </div>
+                                                                            <p
+                                                                                class="font-bold text-slate-800 text-lg md:text-base truncate">
+                                                                                <%= subject.name %>
+                                                                            </p>
+                                                                        </div>
+                                                                        <div
+                                                                            class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
+                                                                            <a href="/dashboard/teacher/subject/<%= subject._id %>/attendance-report"
+                                                                                class="flex-1 md:flex-none text-center bg-blue-50 text-blue-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-100 transition-colors">View</a>
+                                                                            <button
+                                                                                class="generate-qr-btn flex-1 md:flex-none bg-emerald-50 text-emerald-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-100 transition-colors flex items-center justify-center gap-1"
+                                                                                data-subject-id="<%= subject._id %>">
+                                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                    class="h-4 w-4" fill="none"
+                                                                                    viewBox="0 0 24 24"
+                                                                                    stroke="currentColor">
+                                                                                    <path stroke-linecap="round"
+                                                                                        stroke-linejoin="round"
+                                                                                        stroke-width="2"
+                                                                                        d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                                                                                </svg>
+                                                                                QR Code
+                                                                            </button>
+                                                                            <button
+                                                                                class="manual-attendance-btn flex-1 md:flex-none bg-amber-50 text-amber-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-amber-100 transition-colors"
+                                                                                data-subject-id="<%= subject._id %>"
+                                                                                data-subject-name="<%= subject.name %>">Manual</button>
+                                                                            <button
+                                                                                class="delete-subject-btn w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                                                                                data-subject-id="<%= subject._id %>"
+                                                                                title="Delete Subject">&times;</button>
+                                                                        </div>
+                                                                    </div>
+                                                                    <% }); %>
+                                                                        <% } else { %>
+                                                                            <div
+                                                                                class="text-center py-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                                                                <p
+                                                                                    class="text-slate-400 text-sm italic">
+                                                                                    No subjects added yet.</p>
+                                                                            </div>
+                                                                            <% } %>
+                                                        </div>
+                                                        <div class="flex gap-2 items-center mb-6">
+                                                            <form class="add-subject-form flex-1 flex gap-2"
+                                                                data-class-id="<%= classItem._id %>">
+                                                                <input type="text" name="subjectName"
+                                                                    class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all outline-none"
+                                                                    placeholder="Add new subject..." required>
+                                                                <button type="submit"
+                                                                    class="bg-slate-800 text-white font-semibold py-2.5 px-6 rounded-xl hover:bg-indigo-600 text-sm shadow-md transition-all active:scale-95">Add</button>
+                                                            </form>
+                                                        </div>
+                                                        <div
+                                                            class="flex justify-between items-center pt-4 border-t border-slate-100">
+                                                            <div class="flex items-center text-slate-500">
+                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                    class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                                                                    stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        stroke-width="2"
+                                                                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                                                </svg>
+                                                                <span class="text-sm font-semibold">Total Students: <%=
+                                                                        (classItem.students || []).length %></span>
+                                                            </div>
+                                                            <button
+                                                                class="manage-students-btn text-indigo-600 hover:text-indigo-800 text-sm font-bold flex items-center hover:underline"
+                                                                data-students="<%= JSON.stringify(classItem.students || []) %>">
+                                                                Manage Students & Locks
+                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                    class="h-4 w-4 ml-1" viewBox="0 0 20 20"
+                                                                    fill="currentColor">
+                                                                    <path fill-rule="evenodd"
+                                                                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                                                        clip-rule="evenodd" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <% }); %>
+                                                    <% } %>
                                 </div>
-                                <h2 class="text-xl font-bold text-slate-900">Create New Class</h2>
                             </div>
-
-                            <form id="add-class-form" class="space-y-4">
-                                <div>
-                                    <label
-                                        class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Class
-                                        Name</label>
-                                    <input type="text" name="className"
-                                        class="w-full px-4 py-3 bg-slate-50 border-0 ring-1 ring-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-800 placeholder-slate-400"
-                                        placeholder="e.g. Computer Science A" required>
+                            <div class="xl:col-span-1">
+                                <div
+                                    class="bg-white p-6 rounded-2xl shadow-lg shadow-indigo-100/50 border border-indigo-50 sticky top-28">
+                                    <div class="flex items-center mb-6">
+                                        <div class="bg-indigo-600 rounded-full p-2 mr-3 shadow-lg shadow-indigo-500/30">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                            </svg>
+                                        </div>
+                                        <h2 class="text-xl font-bold text-slate-900">Create New Class</h2>
+                                    </div>
+                                    <form id="add-class-form" class="space-y-4">
+                                        <div>
+                                            <label
+                                                class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Class
+                                                Name</label>
+                                            <input type="text" name="className"
+                                                class="w-full px-4 py-3 bg-slate-50 border-0 ring-1 ring-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-800 placeholder-slate-400"
+                                                placeholder="e.g. Computer Science A" required>
+                                        </div>
+                                        <button type="submit"
+                                            class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:-translate-y-0.5 transition-all duration-200">Create
+                                            Class</button>
+                                    </form>
+                                    <div class="mt-6 pt-6 border-t border-slate-100">
+                                        <p class="text-xs text-slate-500 leading-relaxed text-center">Creating a class
+                                            generates a unique ID. Share this ID with your students so they can join
+                                            your classroom.</p>
+                                    </div>
                                 </div>
-                                <button type="submit"
-                                    class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:-translate-y-0.5 transition-all duration-200">
-                                    Create Class
-                                </button>
-                            </form>
-
-                            <div class="mt-6 pt-6 border-t border-slate-100">
-                                <p class="text-xs text-slate-500 leading-relaxed text-center">
-                                    Creating a class generates a unique ID. Share this ID with your students so they can
-                                    join your classroom.
-                                </p>
                             </div>
                         </div>
-                    </div>
-                </div>
             </main>
         </div>
     </div>
@@ -315,13 +334,10 @@
             class="bg-white p-8 rounded-2xl shadow-2xl text-center w-full max-w-sm transform scale-100 transition-transform">
             <h2 class="text-2xl font-bold mb-1 text-slate-800">Scan for Attendance</h2>
             <p class="text-slate-500 text-sm mb-6">Students should scan this with their dashboard</p>
-
             <div class="p-4 bg-white border border-slate-100 rounded-xl shadow-inner inline-block">
                 <div id="qrcode" class="flex justify-center"></div>
             </div>
-
             <p id="qr-timer" class="text-xl font-mono font-bold my-6 text-indigo-600 bg-indigo-50 py-2 rounded-lg"></p>
-
             <button id="close-qr-modal"
                 class="mt-2 bg-slate-100 text-slate-600 hover:bg-slate-200 font-semibold px-4 py-3 rounded-xl w-full transition-colors">Stop
                 & Close</button>
@@ -347,8 +363,7 @@
                 </button>
             </div>
             <div class="overflow-y-auto flex-1 p-6 bg-slate-50/30">
-                <div id="student-list-container" class="space-y-3">
-                </div>
+                <div id="student-list-container" class="space-y-3"></div>
             </div>
         </div>
     </div>
@@ -394,24 +409,20 @@
                     </svg>
                 </button>
             </div>
-
             <div class="p-6 pb-0">
                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Select Date</label>
                 <input type="date" id="manual-date-picker"
                     class="w-full border-0 ring-1 ring-slate-200 rounded-xl bg-slate-50 p-3 focus:ring-2 focus:ring-indigo-500 text-slate-800 outline-none transition-all">
             </div>
-
             <div class="flex-1 overflow-y-auto p-6">
                 <div id="manual-student-list" class="space-y-2">
                     <p class="text-center text-slate-400 py-8 italic">Loading students...</p>
                 </div>
             </div>
-
             <div class="p-6 border-t border-slate-100 bg-white rounded-b-2xl">
                 <button id="save-manual-attendance"
-                    class="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all">
-                    Save Attendance
-                </button>
+                    class="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all">Save
+                    Attendance</button>
             </div>
         </div>
     </div>

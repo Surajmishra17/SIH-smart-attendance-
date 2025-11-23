@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 2. Element Selectors ---
     const addClassForm = document.getElementById('add-class-form');
     const classList = document.getElementById('class-list');
+    const requestsContainer = document.getElementById('requests-container'); // [NEW]
 
     // QR Code Modal Elements
     const qrCodeModal = document.getElementById('qr-code-modal');
@@ -91,19 +92,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Main List Event Listener (Bubbling)
     if (classList) {
-        // Handle "Add Subject" Form Submission
         classList.addEventListener('submit', async (e) => {
             if (e.target.classList.contains('add-subject-form')) {
                 e.preventDefault();
                 const form = e.target;
                 const classId = form.dataset.classId;
                 const subjectName = form.elements.subjectName.value;
-                form.elements.subjectName.value = ''; // Clear input
+                form.elements.subjectName.value = '';
                 await addSubject(classId, subjectName);
             }
         });
 
-        // Handle Clicks (Delete, QR, Manage Students, Manual Attendance)
         classList.addEventListener('click', (e) => {
             const deleteClassBtn = e.target.closest('.delete-class-btn');
             const generateQrBtn = e.target.closest('.generate-qr-btn');
@@ -111,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const manageStudentsBtn = e.target.closest('.manage-students-btn');
             const manualBtn = e.target.closest('.manual-attendance-btn');
 
-            // Delete Class
             if (deleteClassBtn) {
                 const classId = deleteClassBtn.dataset.classId;
                 if (confirm('Are you sure you want to delete this entire class and all its subjects?')) {
@@ -120,14 +118,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Generate QR
             if (generateQrBtn) {
                 const subjectId = generateQrBtn.dataset.subjectId;
                 generateQrCode(subjectId);
                 return;
             }
 
-            // Delete Subject
             if (deleteSubjectBtn) {
                 const subjectId = deleteSubjectBtn.dataset.subjectId;
                 if (confirm('Are you sure you want to delete this subject?')) {
@@ -136,20 +132,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Manage Students
             if (manageStudentsBtn) {
                 const students = JSON.parse(manageStudentsBtn.dataset.students);
                 openStudentModal(students);
                 return;
             }
 
-            // Manual Attendance
             if (manualBtn) {
                 currentManualSubjectId = manualBtn.dataset.subjectId;
                 const subjectName = manualBtn.dataset.subjectName;
                 manualSubjectTitle.textContent = `Manual Attendance: ${subjectName}`;
-
-                // Set date picker to today and load data
                 if (manualDatePicker) {
                     manualDatePicker.valueAsDate = new Date();
                     loadManualData(currentManualSubjectId, manualDatePicker.value);
@@ -160,7 +152,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- API Action Functions ---
+    // [NEW] Listen for clicks in the Requests Notification Area
+    if (requestsContainer) {
+        requestsContainer.addEventListener('click', (e) => {
+            const btn = e.target.closest('.reset-device-btn');
+            if (!btn) return;
+            studentIdToReset = btn.dataset.studentId;
+            buttonToUpdate = btn;
+            resetConfirmModal.classList.remove('hidden');
+        });
+    }
 
     async function addSubject(classId, subjectName) {
         const response = await fetch(`/dashboard/teacher/class/${classId}/subject`, {
@@ -188,16 +189,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 6. Dynamic QR Code Logic (Anti-Proxy) ---
-
     function generateQrCode(subjectId) {
-        // Reset state
         qrcodeContainer.innerHTML = '';
         if (timerInterval) clearInterval(timerInterval);
         if (qrRefreshInterval) clearInterval(qrRefreshInterval);
 
-        // Update function: Generates a new QR with current timestamp
         const updateQR = () => {
-            qrcodeContainer.innerHTML = ''; // Clear old QR
+            qrcodeContainer.innerHTML = '';
             const qrData = JSON.stringify({
                 subjectId: subjectId,
                 timestamp: Date.now()
@@ -211,13 +209,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
 
-        // 1. Initial Generate
         updateQR();
-
-        // 2. Rotate every 5 seconds
         qrRefreshInterval = setInterval(updateQR, 5000);
 
-        // 3. Session Countdown (120 seconds)
         let timeLeft = 120;
         qrTimer.innerHTML = `Session Active.<br>QR Code rotates every 5s.<br>Time Remaining: ${timeLeft}s`;
 
@@ -237,7 +231,6 @@ document.addEventListener('DOMContentLoaded', () => {
         qrCodeModal.classList.remove('hidden');
     }
 
-    // Close QR Modal
     if (closeQrModal) {
         closeQrModal.addEventListener('click', () => {
             qrCodeModal.classList.add('hidden');
@@ -248,15 +241,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 7. Student Management (Device Lock Reset) ---
-
     function openStudentModal(students) {
         studentListContainer.innerHTML = '';
-
         if (!students || students.length === 0) {
             studentListContainer.innerHTML = '<p class="text-gray-500 text-center py-4">No students in this class yet.</p>';
         } else {
             students.forEach(student => {
+                // Logic to show reset button or requested status
                 const isLocked = !!student.deviceId;
+                const isRequested = !!student.deviceResetRequested;
+
+                let buttonHtml = '';
+                if (isRequested) {
+                    buttonHtml = `<button class="reset-device-btn bg-amber-100 text-amber-700 px-3 py-1 rounded text-sm font-medium hover:bg-amber-200" 
+                                 data-student-id="${student._id}">
+                                 Approve Unlink Request
+                               </button>`;
+                } else if (isLocked) {
+                    buttonHtml = `<button class="reset-device-btn bg-orange-100 text-orange-700 px-3 py-1 rounded text-sm font-medium hover:bg-orange-200" 
+                                 data-student-id="${student._id}">
+                                 Reset Device Lock
+                               </button>`;
+                } else {
+                    buttonHtml = `<span class="text-green-600 text-xs font-semibold bg-green-100 px-2 py-1 rounded">No Lock Active</span>`;
+                }
+
                 const studentEl = document.createElement('div');
                 studentEl.className = 'flex justify-between items-center p-3 bg-slate-50 rounded border';
                 studentEl.innerHTML = `
@@ -264,15 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p class="font-semibold text-slate-800">${student.name}</p>
                         <p class="text-sm text-slate-500">${student.email}</p>
                     </div>
-                    <div>
-                        ${isLocked
-                        ? `<button class="reset-device-btn bg-orange-100 text-orange-700 px-3 py-1 rounded text-sm font-medium hover:bg-orange-200" 
-                                 data-student-id="${student._id}">
-                                 Reset Device Lock
-                               </button>`
-                        : `<span class="text-green-600 text-xs font-semibold bg-green-100 px-2 py-1 rounded">No Lock Active</span>`
-                    }
-                    </div>
+                    <div>${buttonHtml}</div>
                 `;
                 studentListContainer.appendChild(studentEl);
             });
@@ -291,15 +292,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!btn) return;
 
             studentIdToReset = btn.dataset.studentId;
-            buttonToUpdate = btn; // Save reference to update UI later
-
-            // Show Confirmation Modal
+            buttonToUpdate = btn;
             resetConfirmModal.classList.remove('hidden');
         });
     }
 
     // --- 8. Reset Confirmation Modal Logic ---
-
     if (confirmResetBtn) {
         confirmResetBtn.addEventListener('click', async () => {
             if (!studentIdToReset) return;
@@ -314,14 +312,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ studentId: studentIdToReset })
                 });
-
                 const result = await response.json();
 
                 if (result.success) {
                     if (buttonToUpdate) {
-                        buttonToUpdate.className = "text-green-600 text-xs font-semibold bg-green-100 px-2 py-1 rounded";
-                        buttonToUpdate.textContent = "Reset Successful";
-                        buttonToUpdate.disabled = true;
+                        // If button is in a list, update UI or remove row
+                        if (buttonToUpdate.closest('#requests-container')) {
+                            buttonToUpdate.closest('.flex').remove();
+                            // If no more requests, hide container (optional logic)
+                        } else {
+                            // Inside modal
+                            buttonToUpdate.className = "text-green-600 text-xs font-semibold bg-green-100 px-2 py-1 rounded";
+                            buttonToUpdate.textContent = "Reset Successful";
+                            buttonToUpdate.disabled = true;
+                        }
                     }
                     showNotification("Device lock reset successfully!", "success");
                 } else {
@@ -349,7 +353,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 9. Manual Attendance Logic ---
-
     async function loadManualData(subjectId, date) {
         manualStudentList.innerHTML = '<p class="text-center text-gray-500 py-4">Loading...</p>';
         try {
@@ -386,7 +389,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Date Picker Change Event
     if (manualDatePicker) {
         manualDatePicker.addEventListener('change', () => {
             if (currentManualSubjectId) {
@@ -395,7 +397,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Save Manual Attendance
     if (saveManualBtn) {
         saveManualBtn.addEventListener('click', async () => {
             const checkboxes = document.querySelectorAll('.manual-check');
@@ -438,5 +439,4 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeManualModal) {
         closeManualModal.addEventListener('click', () => manualModal.classList.add('hidden'));
     }
-
 });

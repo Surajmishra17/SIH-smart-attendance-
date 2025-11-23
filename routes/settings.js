@@ -46,7 +46,7 @@ router.post('/change-password', async (req, res) => {
             return res.redirect('/settings?error=Incorrect current password');
         }
 
-        // 3. Update password (pre-save hook in model will handle hashing)
+        // 3. Update password
         user.password = newPassword;
         await user.save();
 
@@ -57,22 +57,23 @@ router.post('/change-password', async (req, res) => {
     }
 });
 
-// POST: Reset Device Lock (Self-Service)
+// POST: Request Device Reset (Student Side)
 router.post('/reset-device', async (req, res) => {
     try {
         const { passwordConfirm } = req.body;
         const user = await User.findById(req.session.userId);
 
-        // Security Check: Require password re-entry to unlink device
+        // Security Check
         const isMatch = await bcrypt.compare(passwordConfirm, user.password);
         if (!isMatch) {
-            return res.status(401).json({ success: false, message: 'Incorrect password. Device not reset.' });
+            return res.status(401).json({ success: false, message: 'Incorrect password.' });
         }
 
-        user.deviceId = null;
+        // [MODIFIED] Set flag instead of clearing deviceId
+        user.deviceResetRequested = true;
         await user.save();
 
-        res.json({ success: true, message: 'Device unlinked successfully. You can now login from a new device.' });
+        res.json({ success: true, message: 'Unlink request sent to your teachers. Please wait for approval.' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'Server Error' });

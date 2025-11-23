@@ -22,10 +22,14 @@ const UserSchema = new mongoose.Schema({
         required: true
     },
     // [SECURITY] Device Lock Field
-    // Stores the unique ID of the student's trusted device.
     deviceId: {
         type: String,
         default: null
+    },
+    // [NEW] Flag for reset requests
+    deviceResetRequested: {
+        type: Boolean,
+        default: false
     }
 });
 

@@ -94,9 +94,8 @@
                                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 focus:border-indigo-500 focus:ring-indigo-500">
                                         </div>
                                         <button type="submit"
-                                            class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors">
-                                            Update Password
-                                        </button>
+                                            class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors">Update
+                                            Password</button>
                                     </form>
                                 </div>
 
@@ -105,31 +104,41 @@
                                         <h2 class="text-lg font-semibold mb-4 border-b pb-2">Device Management</h2>
                                         <div class="flex items-start justify-between">
                                             <div>
-                                                <p class="text-sm text-slate-600 mb-2">
-                                                    Your account is currently locked to a specific device for
-                                                    attendance.
-                                                </p>
+                                                <p class="text-sm text-slate-600 mb-2">Your account is currently locked
+                                                    to a specific device for attendance.</p>
                                                 <div class="flex items-center space-x-2">
                                                     <span class="text-sm font-medium text-slate-700">Status:</span>
-                                                    <% if (user.deviceId) { %>
+
+                                                    <% if (user.deviceResetRequested) { %>
                                                         <span
-                                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                            Active & Locked
+                                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                                            Reset Requested
                                                         </span>
-                                                        <% } else { %>
+                                                        <% } else if (user.deviceId) { %>
                                                             <span
-                                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                                Not Linked
+                                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                                Active & Locked
                                                             </span>
-                                                            <% } %>
+                                                            <% } else { %>
+                                                                <span
+                                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                                    Not Linked
+                                                                </span>
+                                                                <% } %>
                                                 </div>
                                             </div>
-                                            <% if (user.deviceId) { %>
+
+                                            <% if (user.deviceId && !user.deviceResetRequested) { %>
                                                 <button onclick="openResetModal()"
-                                                    class="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-md hover:bg-red-100 text-sm font-medium transition-colors">
-                                                    Unlink Device
+                                                    class="bg-amber-50 text-amber-700 border border-amber-200 px-4 py-2 rounded-md hover:bg-amber-100 text-sm font-medium transition-colors">
+                                                    Request Unlink
                                                 </button>
-                                                <% } %>
+                                                <% } else if (user.deviceResetRequested) { %>
+                                                    <button disabled
+                                                        class="bg-gray-50 text-gray-400 border border-gray-200 px-4 py-2 rounded-md text-sm font-medium cursor-not-allowed">
+                                                        Request Pending
+                                                    </button>
+                                                    <% } %>
                                         </div>
                                     </div>
                                     <% } %>
@@ -140,19 +149,19 @@
 
     <div id="reset-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-6">
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Confirm Device Reset</h3>
-            <p class="text-sm text-gray-600 mb-4">To unlink your device, please enter your current password.</p>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Request Device Unlink</h3>
+            <p class="text-sm text-gray-600 mb-4">Submit a request to your teachers to unlink this device. You will need
+                to enter your password.</p>
 
             <input type="password" id="reset-password" placeholder="Current Password"
                 class="w-full border rounded-md p-2 mb-4 focus:ring-2 focus:ring-indigo-500 outline-none">
-
             <div id="reset-error" class="text-red-600 text-sm mb-3 hidden"></div>
 
             <div class="flex justify-end space-x-3">
                 <button onclick="closeResetModal()"
                     class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">Cancel</button>
                 <button onclick="confirmReset()"
-                    class="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-md">Unlink Device</button>
+                    class="px-4 py-2 bg-amber-600 text-white hover:bg-amber-700 rounded-md">Send Request</button>
             </div>
         </div>
     </div>
@@ -185,7 +194,6 @@
                     body: JSON.stringify({ passwordConfirm: password })
                 });
                 const result = await response.json();
-
                 if (result.success) {
                     alert(result.message);
                     window.location.reload();
