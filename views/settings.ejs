@@ -6,186 +6,305 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account Settings | AttenSys</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            /* Slate-50 */
+        }
+
+        /* Smooth fade for modal */
+        .modal-transition {
+            transition: opacity 0.2s ease-in-out;
         }
     </style>
 </head>
 
-<body class="bg-slate-100 text-slate-800">
+<body class="text-slate-600 antialiased selection:bg-indigo-100 selection:text-indigo-700">
 
     <div class="min-h-screen flex flex-col">
-        <header class="bg-white border-b p-4 shadow-sm">
-            <div class="max-w-4xl mx-auto flex justify-between items-center">
-                <h1 class="text-xl font-bold text-slate-900">Account Settings</h1>
-                <a href="/dashboard/<%= user.role %>" class="text-indigo-600 hover:text-indigo-800 font-medium">&larr;
-                    Back to Dashboard</a>
+        <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
+            <div class="max-w-5xl mx-auto px-6 h-16 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div
+                        class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+                        A</div>
+                    <h1 class="text-lg font-bold text-slate-900 tracking-tight">Account Settings</h1>
+                </div>
+                <a href="/dashboard/<%= user.role %>"
+                    class="group flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors">
+                    <span class="group-hover:-translate-x-1 transition-transform duration-200">&larr;</span>
+                    Back to Dashboard
+                </a>
             </div>
         </header>
 
-        <main class="flex-1 p-6">
-            <div class="max-w-4xl mx-auto space-y-6">
+        <main class="flex-1 py-10 px-6">
+            <div class="max-w-3xl mx-auto space-y-8">
 
                 <% if (successMessage) { %>
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
+                    <div class="flex items-center gap-3 bg-emerald-50 border border-emerald-100 text-emerald-700 px-5 py-4 rounded-xl shadow-sm"
                         role="alert">
-                        <span class="block sm:inline">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        <span class="font-medium text-sm">
                             <%= successMessage %>
                         </span>
                     </div>
                     <% } %>
+
                         <% if (errorMessage) { %>
-                            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+                            <div class="flex items-center gap-3 bg-red-50 border border-red-100 text-red-700 px-5 py-4 rounded-xl shadow-sm"
                                 role="alert">
-                                <span class="block sm:inline">
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="font-medium text-sm">
                                     <%= errorMessage %>
                                 </span>
                             </div>
                             <% } %>
 
-                                <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-                                    <h2 class="text-lg font-semibold mb-4 border-b pb-2">Profile Information</h2>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <section
+                                    class="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden">
+                                    <div
+                                        class="px-8 py-6 border-b border-slate-50 flex items-center gap-4 bg-slate-50/50">
+                                        <div
+                                            class="h-16 w-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-md">
+                                            <%= user.name.charAt(0).toUpperCase() %>
+                                        </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-slate-600">Full Name</label>
-                                            <p class="mt-1 text-slate-900 font-medium">
+                                            <h2 class="text-xl font-bold text-slate-900">
+                                                <%= user.name %>
+                                            </h2>
+                                            <p class="text-slate-500 text-sm">
+                                                <%= user.email %>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="px-8 py-6 grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
+                                        <div>
+                                            <label
+                                                class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Full
+                                                Name</label>
+                                            <p class="text-slate-900 font-medium text-base">
                                                 <%= user.name %>
                                             </p>
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-slate-600">Email
+                                            <label
+                                                class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Email
                                                 Address</label>
-                                            <p class="mt-1 text-slate-900 font-medium">
+                                            <p class="text-slate-900 font-medium text-base">
                                                 <%= user.email %>
                                             </p>
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-slate-600">Role</label>
-                                            <p class="mt-1 text-slate-900 font-medium capitalize">
+                                            <label
+                                                class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Role</label>
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 capitalize border border-slate-200">
                                                 <%= user.role %>
-                                            </p>
+                                            </span>
                                         </div>
                                     </div>
-                                </div>
+                                </section>
 
-                                <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-                                    <h2 class="text-lg font-semibold mb-4 border-b pb-2">Change Password</h2>
-                                    <form action="/settings/change-password" method="POST" class="space-y-4 max-w-md">
+                                <section
+                                    class="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-slate-100 p-8">
+                                    <div class="mb-6">
+                                        <h2 class="text-lg font-bold text-slate-900">Security</h2>
+                                        <p class="text-slate-500 text-sm mt-1">Update your password to keep your account
+                                            secure.</p>
+                                    </div>
+
+                                    <form action="/settings/change-password" method="POST" class="space-y-5 max-w-lg">
                                         <div>
                                             <label for="currentPassword"
-                                                class="block text-sm font-medium text-slate-700">Current
+                                                class="block text-sm font-medium text-slate-700 mb-1.5">Current
                                                 Password</label>
                                             <input type="password" name="currentPassword" required
-                                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 focus:border-indigo-500 focus:ring-indigo-500">
+                                                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none text-sm placeholder:text-slate-400">
                                         </div>
-                                        <div>
-                                            <label for="newPassword"
-                                                class="block text-sm font-medium text-slate-700">New Password</label>
-                                            <input type="password" name="newPassword" required
-                                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 focus:border-indigo-500 focus:ring-indigo-500">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                            <div>
+                                                <label for="newPassword"
+                                                    class="block text-sm font-medium text-slate-700 mb-1.5">New
+                                                    Password</label>
+                                                <input type="password" name="newPassword" required
+                                                    class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none text-sm placeholder:text-slate-400">
+                                            </div>
+                                            <div>
+                                                <label for="confirmNewPassword"
+                                                    class="block text-sm font-medium text-slate-700 mb-1.5">Confirm
+                                                    Password</label>
+                                                <input type="password" name="confirmNewPassword" required
+                                                    class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none text-sm placeholder:text-slate-400">
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label for="confirmNewPassword"
-                                                class="block text-sm font-medium text-slate-700">Confirm New
-                                                Password</label>
-                                            <input type="password" name="confirmNewPassword" required
-                                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 focus:border-indigo-500 focus:ring-indigo-500">
+                                        <div class="pt-2">
+                                            <button type="submit"
+                                                class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-md shadow-indigo-200 hover:bg-indigo-700 hover:shadow-lg transition-all active:scale-[0.98]">
+                                                Update Password
+                                            </button>
                                         </div>
-                                        <button type="submit"
-                                            class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors">Update
-                                            Password</button>
                                     </form>
-                                </div>
+                                </section>
 
                                 <% if (user.role==='student' ) { %>
-                                    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-                                        <h2 class="text-lg font-semibold mb-4 border-b pb-2">Device Management</h2>
-                                        <div class="flex items-start justify-between">
+                                    <section
+                                        class="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-slate-100 p-8">
+                                        <div class="flex flex-col md:flex-row md:items-start justify-between gap-6">
                                             <div>
-                                                <p class="text-sm text-slate-600 mb-2">Your account is currently locked
-                                                    to a specific device for attendance.</p>
-                                                <div class="flex items-center space-x-2">
-                                                    <span class="text-sm font-medium text-slate-700">Status:</span>
+                                                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                                    <svg class="w-5 h-5 text-slate-400" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z">
+                                                        </path>
+                                                    </svg>
+                                                    Device Management
+                                                </h2>
+                                                <p class="text-slate-500 text-sm mt-1 mb-4 max-w-md">Your account is
+                                                    currently locked to a specific device for attendance verification
+                                                    purposes.</p>
 
+                                                <div class="flex items-center gap-3">
+                                                    <span class="text-sm font-medium text-slate-700">Status:</span>
                                                     <% if (user.deviceResetRequested) { %>
                                                         <span
-                                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                                            <span
+                                                                class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                                                             Reset Requested
                                                         </span>
                                                         <% } else if (user.deviceId) { %>
                                                             <span
-                                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                                <span
+                                                                    class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                                                 Active & Locked
                                                             </span>
                                                             <% } else { %>
                                                                 <span
-                                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
                                                                     Not Linked
                                                                 </span>
                                                                 <% } %>
                                                 </div>
                                             </div>
 
-                                            <% if (user.deviceId && !user.deviceResetRequested) { %>
-                                                <button onclick="openResetModal()"
-                                                    class="bg-amber-50 text-amber-700 border border-amber-200 px-4 py-2 rounded-md hover:bg-amber-100 text-sm font-medium transition-colors">
-                                                    Request Unlink
-                                                </button>
-                                                <% } else if (user.deviceResetRequested) { %>
-                                                    <button disabled
-                                                        class="bg-gray-50 text-gray-400 border border-gray-200 px-4 py-2 rounded-md text-sm font-medium cursor-not-allowed">
-                                                        Request Pending
+                                            <div class="flex-shrink-0">
+                                                <% if (user.deviceId && !user.deviceResetRequested) { %>
+                                                    <button onclick="openResetModal()"
+                                                        class="w-full md:w-auto px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-sm">
+                                                        Request Unlink
                                                     </button>
-                                                    <% } %>
+                                                    <% } else if (user.deviceResetRequested) { %>
+                                                        <button disabled
+                                                            class="w-full md:w-auto px-4 py-2 bg-slate-50 border border-slate-100 text-slate-400 rounded-xl text-sm font-medium cursor-not-allowed">
+                                                            Request Pending
+                                                        </button>
+                                                        <% } %>
+                                            </div>
                                         </div>
-                                    </div>
+                                    </section>
                                     <% } %>
 
             </div>
         </main>
     </div>
 
-    <div id="reset-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-6">
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Request Device Unlink</h3>
-            <p class="text-sm text-gray-600 mb-4">Submit a request to your teachers to unlink this device. You will need
-                to enter your password.</p>
+    <div id="reset-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog"
+        aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/20 backdrop-blur-sm transition-opacity opacity-0" id="modal-backdrop">
+        </div>
 
-            <input type="password" id="reset-password" placeholder="Current Password"
-                class="w-full border rounded-md p-2 mb-4 focus:ring-2 focus:ring-indigo-500 outline-none">
-            <div id="reset-error" class="text-red-600 text-sm mb-3 hidden"></div>
-
-            <div class="flex justify-end space-x-3">
-                <button onclick="closeResetModal()"
-                    class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">Cancel</button>
-                <button onclick="confirmReset()"
-                    class="px-4 py-2 bg-amber-600 text-white hover:bg-amber-700 rounded-md">Send Request</button>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    id="modal-panel">
+                    <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div
+                                class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-amber-50 sm:mx-0 sm:h-10 sm:w-10">
+                                <svg class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                    stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                                </svg>
+                            </div>
+                            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                                <h3 class="text-base font-semibold leading-6 text-slate-900" id="modal-title">Unlink
+                                    Device Request</h3>
+                                <div class="mt-2">
+                                    <p class="text-sm text-slate-500">This will send a request to your teachers to
+                                        unlink your current device. To confirm, please verify your identity.</p>
+                                </div>
+                                <div class="mt-4">
+                                    <input type="password" id="reset-password" placeholder="Enter your password"
+                                        class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all">
+                                    <div id="reset-error" class="text-red-600 text-xs mt-2 hidden font-medium"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button onclick="confirmReset()" type="button"
+                            class="inline-flex w-full justify-center rounded-xl bg-amber-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 sm:ml-3 sm:w-auto transition-colors">Send
+                            Request</button>
+                        <button onclick="closeResetModal()" type="button"
+                            class="mt-3 inline-flex w-full justify-center rounded-xl bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto transition-colors">Cancel</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         const modal = document.getElementById('reset-modal');
+        const backdrop = document.getElementById('modal-backdrop');
+        const panel = document.getElementById('modal-panel');
         const passInput = document.getElementById('reset-password');
         const errorMsg = document.getElementById('reset-error');
 
         function openResetModal() {
             modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            // Small timeout to allow display:block to apply before opacity transition
+            setTimeout(() => {
+                backdrop.classList.remove('opacity-0');
+                panel.classList.remove('opacity-0', 'translate-y-4', 'sm:translate-y-0', 'sm:scale-95');
+                panel.classList.add('opacity-100', 'translate-y-0', 'sm:scale-100');
+            }, 10);
         }
 
         function closeResetModal() {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            passInput.value = '';
-            errorMsg.classList.add('hidden');
+            backdrop.classList.add('opacity-0');
+            panel.classList.remove('opacity-100', 'translate-y-0', 'sm:scale-100');
+            panel.classList.add('opacity-0', 'translate-y-4', 'sm:translate-y-0', 'sm:scale-95');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                passInput.value = '';
+                errorMsg.classList.add('hidden');
+            }, 200); // Wait for transition to finish
         }
 
         async function confirmReset() {
             const password = passInput.value;
-            if (!password) return;
+            if (!password) {
+                errorMsg.textContent = "Password is required";
+                errorMsg.classList.remove('hidden');
+                return;
+            }
 
             try {
                 const response = await fetch('/settings/reset-device', {
@@ -195,7 +314,8 @@
                 });
                 const result = await response.json();
                 if (result.success) {
-                    alert(result.message);
+                    closeResetModal();
+                    // Optional: Show a success toast here before reload
                     window.location.reload();
                 } else {
                     errorMsg.textContent = result.message;
@@ -206,6 +326,9 @@
                 alert('An error occurred');
             }
         }
+
+        // Close on backdrop click
+        backdrop.addEventListener('click', closeResetModal);
     </script>
 </body>
 
