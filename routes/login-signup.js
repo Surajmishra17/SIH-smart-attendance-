@@ -25,12 +25,28 @@ router.post('/login', async (req, res) => {
 
         // [SECURITY] Device Locking Logic
         if (role === 'student') {
+
+            // ---------------------------------------------------------
+            // [NEW CHECK] "One Device, One Student" Policy
+            // Check if this device ID is already registered to ANY student
+            // ---------------------------------------------------------
+            const deviceOwner = await User.findOne({ deviceId: deviceId, role: 'student' });
+
+            // If the device is found in DB AND it belongs to someone else
+            if (deviceOwner && deviceOwner._id.toString() !== user._id.toString()) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Security Alert: This device is already linked to another student. You cannot log in on a shared/borrowed device.'
+                });
+            }
+            // ---------------------------------------------------------
+
             if (!user.deviceId) {
-                // First time login: Lock to this device
+                // First time login (or after reset): Lock to this device
                 user.deviceId = deviceId;
                 await user.save();
             } else if (user.deviceId !== deviceId) {
-                // Mismatch: Block login
+                // Mismatch: User is trying to use a different device than their locked one
                 return res.status(403).json({
                     success: false,
                     message: 'Security Alert: You are attempting to login from an unregistered device. To prevent proxy attendance, you must use your registered phone.'
@@ -61,6 +77,20 @@ router.post('/signup', async (req, res) => {
         if (user) {
             return res.status(400).json({ success: false, message: 'A user with this email already exists.' });
         }
+
+        // ---------------------------------------------------------
+        // [NEW CHECK] Prevent Signup on a Locked Device
+        // ---------------------------------------------------------
+        if (role === 'student') {
+            const existingDeviceUser = await User.findOne({ deviceId: deviceId, role: 'student' });
+            if (existingDeviceUser) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Security Alert: This device is already registered to another student. You cannot create an account on a shared device.'
+                });
+            }
+        }
+        // ---------------------------------------------------------
 
         user = new User({
             name,
