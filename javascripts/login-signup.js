@@ -68,6 +68,20 @@ document.addEventListener('DOMContentLoaded', function () {
     loginForm.addEventListener('submit', async function (e) {
         e.preventDefault();
 
+        // Helper function to reset the button state
+        const resetLoginButton = () => {
+            const btn = document.getElementById('login-btn');
+            const text = btn.querySelector('span');
+            // Remove the spinner SVG if it exists
+            const spinner = btn.querySelector('svg.animate-spin');
+            if (spinner) spinner.remove();
+
+            // Reset text and classes
+            text.textContent = 'Sign In';
+            btn.disabled = false;
+            btn.classList.remove('opacity-75', 'cursor-not-allowed');
+        };
+
         // Reset error message state
         loginErrorBox.classList.add('hidden');
         loginErrorText.textContent = '';
@@ -92,11 +106,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 // [NEW] Show On-Screen Error instead of Alert
                 loginErrorText.textContent = result.message;
                 loginErrorBox.classList.remove('hidden');
+
+                // FIX: Reset the button so the user can try again
+                resetLoginButton();
             }
         } catch (error) {
             console.error('Login error:', error);
             loginErrorText.textContent = "An unexpected error occurred. Please try again.";
             loginErrorBox.classList.remove('hidden');
+
+            // FIX: Reset the button on network/server error
+            resetLoginButton();
         }
     });
 
