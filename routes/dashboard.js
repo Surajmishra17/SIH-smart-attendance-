@@ -105,7 +105,7 @@ router.post('/student/attendance', async (req, res) => {
 
         const qrTimestamp = parsedQrData.timestamp;
         const timeDiffSeconds = (Date.now() - qrTimestamp) / 1000;
-        if (timeDiffSeconds > 15) return res.status(400).json({ success: false, message: 'QR Code Expired. Scan the live code.' });
+        if (timeDiffSeconds > 5) return res.status(400).json({ success: false, message: 'QR Code Expired. Scan the live code.' });
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
