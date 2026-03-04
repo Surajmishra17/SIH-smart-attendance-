@@ -21,6 +21,11 @@ const AttendanceSchema = new mongoose.Schema({
         type: String,
         enum: ['present', 'absent'],
         required: true
+    },
+    markingMethod: {
+        type: String,
+        enum: ['qr', 'manual', 'face'],
+        default: 'qr'
     }
 });
 

@@ -30,6 +30,11 @@ const UserSchema = new mongoose.Schema({
     deviceResetRequested: {
         type: Boolean,
         default: false
+    },
+    // Student face descriptor (128-d embedding stored as plain number array)
+    faceDescriptor: {
+        type: [Number],
+        default: undefined
     }
 });
 

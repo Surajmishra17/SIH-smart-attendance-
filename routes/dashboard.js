@@ -24,11 +24,21 @@ const noCache = (req, res, next) => {
 
 router.use(isAuthenticated, noCache);
 
+const getUtcDayBounds = (dateInput = new Date()) => {
+    const base = new Date(dateInput);
+    const start = new Date(base);
+    start.setUTCHours(0, 0, 0, 0);
+    const end = new Date(base);
+    end.setUTCHours(23, 59, 59, 999);
+    return { start, end };
+};
+
 // --- STUDENT ROUTES ---
 // (Student routes remain unchanged, including join-class, attendance, etc.)
 router.get('/student', async (req, res) => {
     try {
         const studentId = req.session.userId;
+        const student = await User.findById(studentId).select('faceDescriptor');
         const classes = await Class.find({ students: studentId })
             .populate('teacher', 'name')
             .populate('subjects');
@@ -69,7 +79,8 @@ router.get('/student', async (req, res) => {
             });
         });
 
-        res.render('student-dashboard', { classes, attendanceByDate, subjectStats });
+        const faceRegistered = Array.isArray(student?.faceDescriptor) && student.faceDescriptor.length === 128;
+        res.render('student-dashboard', { classes, attendanceByDate, subjectStats, faceRegistered });
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');
@@ -118,10 +129,67 @@ router.post('/student/attendance', async (req, res) => {
 
         if (existingAttendance) return res.status(400).json({ success: false, message: 'Attendance already marked today.' });
 
-        const newAttendance = new Attendance({ subject: subjectId, student: studentId, status: 'present' });
+        const newAttendance = new Attendance({
+            subject: subjectId,
+            student: studentId,
+            status: 'present',
+            markingMethod: 'qr'
+        });
         await newAttendance.save();
         res.json({ success: true, message: 'Attendance marked!' });
     } catch (err) { res.status(500).json({ success: false, message: 'Server Error' }); }
+});
+
+router.post('/api/register-face', async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const user = await User.findById(userId).select('role');
+
+        if (!user || user.role !== 'student') {
+            return res.status(403).json({ success: false, message: 'Only students can register face data.' });
+        }
+
+        const descriptor = req.body?.descriptor;
+        if (!Array.isArray(descriptor)) {
+            return res.status(400).json({ success: false, message: 'Descriptor must be an array.' });
+        }
+
+        if (descriptor.length !== 128) {
+            return res.status(400).json({ success: false, message: 'Invalid descriptor length. Please try registering again.' });
+        }
+
+        const cleaned = descriptor.map(Number);
+        if (cleaned.some(n => !Number.isFinite(n))) {
+            return res.status(400).json({ success: false, message: 'Descriptor contains invalid values.' });
+        }
+
+        await User.findByIdAndUpdate(userId, { $set: { faceDescriptor: cleaned } });
+        res.json({ success: true, message: 'Face registered successfully.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+});
+
+router.delete('/api/register-face', async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const user = await User.findById(userId).select('role faceDescriptor');
+
+        if (!user || user.role !== 'student') {
+            return res.status(403).json({ success: false, message: 'Only students can delete face data.' });
+        }
+
+        const hadDescriptor = Array.isArray(user.faceDescriptor) && user.faceDescriptor.length > 0;
+        await User.findByIdAndUpdate(userId, { $unset: { faceDescriptor: 1 } });
+        res.json({
+            success: true,
+            message: hadDescriptor ? 'Registered face deleted.' : 'No registered face found to delete.'
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
 });
 
 router.delete('/student/class/:classId', async (req, res) => {
@@ -201,7 +269,7 @@ router.post('/teacher/attendance/manual', async (req, res) => {
             if (s.isPresent) {
                 await Attendance.findOneAndUpdate(
                     { subject: subjectId, student: s.studentId, date: { $gte: startOfDay, $lte: endOfDay } },
-                    { subject: subjectId, student: s.studentId, date: targetDate, status: 'present' },
+                    { subject: subjectId, student: s.studentId, date: targetDate, status: 'present', markingMethod: 'manual' },
                     { upsert: true, new: true }
                 );
             } else {
@@ -212,6 +280,105 @@ router.post('/teacher/attendance/manual', async (req, res) => {
         }
         res.json({ success: true, message: 'Attendance updated successfully.' });
     } catch (err) { res.status(500).json({ success: false, message: 'Server Error' }); }
+});
+
+router.get('/api/subject/:subjectId/face-students', async (req, res) => {
+    try {
+        const { subjectId } = req.params;
+        const teacherId = req.session.userId;
+        const teacher = await User.findById(teacherId).select('role');
+
+        if (!teacher || teacher.role !== 'teacher') {
+            return res.status(403).json({ success: false, message: 'Only teachers can access this endpoint.' });
+        }
+
+        const subject = await Subject.findById(subjectId).populate('class');
+        if (!subject) {
+            return res.status(404).json({ success: false, message: 'Subject not found.' });
+        }
+
+        if (!subject.teacher || subject.teacher.toString() !== teacherId.toString()) {
+            return res.status(403).json({ success: false, message: 'Unauthorized subject access.' });
+        }
+
+        const classWithStudents = await Class.findById(subject.class._id)
+            .populate('students', 'name email faceDescriptor');
+
+        let skipped = 0;
+        const students = (classWithStudents?.students || [])
+            .filter(s => {
+                const desc = s.faceDescriptor;
+                const ok = Array.isArray(desc) && desc.length === 128 && desc.every(n => Number.isFinite(Number(n)));
+                if (!ok && Array.isArray(desc) && desc.length > 0) skipped += 1;
+                return ok;
+            })
+            .map(s => ({
+                studentId: s._id,
+                label: s._id.toString(),
+                name: s.name,
+                email: s.email,
+                descriptor: s.faceDescriptor.map(Number)
+            }));
+
+        res.json({ success: true, students, skipped });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+});
+
+router.post('/api/mark-face-attendance', async (req, res) => {
+    try {
+        const { subjectId, studentId } = req.body;
+        const teacherId = req.session.userId;
+        const teacher = await User.findById(teacherId).select('role');
+
+        if (!teacher || teacher.role !== 'teacher') {
+            return res.status(403).json({ success: false, message: 'Only teachers can mark face attendance.' });
+        }
+
+        const subject = await Subject.findById(subjectId).populate('class');
+        if (!subject) {
+            return res.status(404).json({ success: false, message: 'Subject not found.' });
+        }
+
+        if (!subject.teacher || subject.teacher.toString() !== teacherId.toString()) {
+            return res.status(403).json({ success: false, message: 'Unauthorized subject access.' });
+        }
+
+        const classDoc = await Class.findById(subject.class._id).select('students');
+        const belongsToClass = classDoc?.students?.some(sid => sid.toString() === studentId);
+        if (!belongsToClass) {
+            return res.status(400).json({ success: false, message: 'Student does not belong to this class.' });
+        }
+
+        const { start, end } = getUtcDayBounds(new Date());
+        const existing = await Attendance.findOne({
+            subject: subjectId,
+            student: studentId,
+            date: { $gte: start, $lte: end }
+        });
+
+        if (existing) {
+            existing.status = 'present';
+            existing.markingMethod = 'face';
+            await existing.save();
+            return res.json({ success: true, message: 'Attendance updated via face recognition.', alreadyMarked: true });
+        }
+
+        await Attendance.create({
+            subject: subjectId,
+            student: studentId,
+            date: new Date(),
+            status: 'present',
+            markingMethod: 'face'
+        });
+
+        res.json({ success: true, message: 'Attendance marked via face recognition.', alreadyMarked: false });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
 });
 
 router.post('/teacher/class', async (req, res) => {
