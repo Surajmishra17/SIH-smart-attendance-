@@ -24,6 +24,23 @@ const noCache = (req, res, next) => {
 
 router.use(isAuthenticated, noCache);
 
+const requireRole = (role) => async (req, res, next) => {
+    try {
+        const user = await User.findById(req.session.userId).select('role');
+        if (!user || user.role !== role) {
+            return res.status(403).json({ success: false, message: `Only ${role}s can access this endpoint.` });
+        }
+        req.currentUserRole = user.role;
+        next();
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+const requireStudent = requireRole('student');
+const requireTeacher = requireRole('teacher');
+
 const getUtcDayBounds = (dateInput = new Date()) => {
     const base = new Date(dateInput);
     const start = new Date(base);
@@ -33,9 +50,26 @@ const getUtcDayBounds = (dateInput = new Date()) => {
     return { start, end };
 };
 
+const ensureTeacherOwnsSubject = async (teacherId, subjectId) => {
+    const subject = await Subject.findById(subjectId).select('teacher class').populate('class', 'teacher');
+    if (!subject) {
+        return { ok: false, status: 404, message: 'Subject not found.' };
+    }
+
+    const directTeacherId = subject.teacher ? subject.teacher.toString() : null;
+    const classTeacherId = subject.class?.teacher ? subject.class.teacher.toString() : null;
+    const ownsSubject = directTeacherId === teacherId.toString() || classTeacherId === teacherId.toString();
+
+    if (!ownsSubject) {
+        return { ok: false, status: 403, message: 'Unauthorized subject access.' };
+    }
+
+    return { ok: true, subject };
+};
+
 // --- STUDENT ROUTES ---
 // (Student routes remain unchanged, including join-class, attendance, etc.)
-router.get('/student', async (req, res) => {
+router.get('/student', requireStudent, async (req, res) => {
     try {
         const studentId = req.session.userId;
         const student = await User.findById(studentId).select('faceDescriptor');
@@ -87,7 +121,7 @@ router.get('/student', async (req, res) => {
     }
 });
 // ... (Other student routes: join-class, attendance, delete class remain same)
-router.post('/student/join-class', async (req, res) => {
+router.post('/student/join-class', requireStudent, async (req, res) => {
     try {
         const { classId } = req.body;
         const studentId = req.session.userId;
@@ -104,7 +138,7 @@ router.post('/student/join-class', async (req, res) => {
     }
 });
 
-router.post('/student/attendance', async (req, res) => {
+router.post('/student/attendance', requireStudent, async (req, res) => {
     try {
         const { subjectId, qrCodeData } = req.body;
         const studentId = req.session.userId;
@@ -118,13 +152,12 @@ router.post('/student/attendance', async (req, res) => {
         const timeDiffSeconds = (Date.now() - qrTimestamp) / 1000;
         if (timeDiffSeconds > 8) return res.status(400).json({ success: false, message: 'QR Code Expired. Scan the live code.' });
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const { start, end } = getUtcDayBounds(new Date());
 
         const existingAttendance = await Attendance.findOne({
             subject: subjectId,
             student: studentId,
-            date: { $gte: today }
+            date: { $gte: start, $lte: end }
         });
 
         if (existingAttendance) return res.status(400).json({ success: false, message: 'Attendance already marked today.' });
@@ -140,14 +173,9 @@ router.post('/student/attendance', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false, message: 'Server Error' }); }
 });
 
-router.post('/api/register-face', async (req, res) => {
+router.post('/api/register-face', requireStudent, async (req, res) => {
     try {
         const userId = req.session.userId;
-        const user = await User.findById(userId).select('role');
-
-        if (!user || user.role !== 'student') {
-            return res.status(403).json({ success: false, message: 'Only students can register face data.' });
-        }
 
         const descriptor = req.body?.descriptor;
         if (!Array.isArray(descriptor)) {
@@ -171,14 +199,10 @@ router.post('/api/register-face', async (req, res) => {
     }
 });
 
-router.delete('/api/register-face', async (req, res) => {
+router.delete('/api/register-face', requireStudent, async (req, res) => {
     try {
         const userId = req.session.userId;
-        const user = await User.findById(userId).select('role faceDescriptor');
-
-        if (!user || user.role !== 'student') {
-            return res.status(403).json({ success: false, message: 'Only students can delete face data.' });
-        }
+        const user = await User.findById(userId).select('faceDescriptor');
 
         const hadDescriptor = Array.isArray(user.faceDescriptor) && user.faceDescriptor.length > 0;
         await User.findByIdAndUpdate(userId, { $unset: { faceDescriptor: 1 } });
@@ -192,7 +216,7 @@ router.delete('/api/register-face', async (req, res) => {
     }
 });
 
-router.delete('/student/class/:classId', async (req, res) => {
+router.delete('/student/class/:classId', requireStudent, async (req, res) => {
     try {
         const { classId } = req.params;
         const studentId = req.session.userId;
@@ -204,7 +228,7 @@ router.delete('/student/class/:classId', async (req, res) => {
 
 // --- TEACHER ROUTES ---
 
-router.get('/teacher', async (req, res) => {
+router.get('/teacher', requireTeacher, async (req, res) => {
     try {
         const teacherId = req.session.userId;
         const classes = await Class.find({ teacher: teacherId })
@@ -233,14 +257,24 @@ router.get('/teacher', async (req, res) => {
 });
 
 // ... (Manual attendance routes remain same) ...
-router.get('/teacher/attendance/manual/:subjectId', async (req, res) => {
+router.get('/teacher/attendance/manual/:subjectId', requireTeacher, async (req, res) => {
     try {
         const { subjectId } = req.params;
         const { date } = req.query;
-        const subject = await Subject.findById(subjectId).populate('class');
-        if (!subject) return res.status(404).json({ success: false, message: 'Subject not found' });
+        const ownership = await ensureTeacherOwnsSubject(req.session.userId, subjectId);
+        if (!ownership.ok) {
+            return res.status(ownership.status).json({ success: false, message: ownership.message });
+        }
+        const subject = ownership.subject;
+        if (!subject.class?._id) {
+            return res.status(400).json({ success: false, message: 'Subject is not linked to a class.' });
+        }
+
         const allStudents = await Class.findById(subject.class._id).populate('students', 'name email');
         const queryDate = new Date(date);
+        if (Number.isNaN(queryDate.getTime())) {
+            return res.status(400).json({ success: false, message: 'Invalid date.' });
+        }
         const startOfDay = new Date(queryDate.setUTCHours(0, 0, 0, 0));
         const endOfDay = new Date(queryDate.setUTCHours(23, 59, 59, 999));
         const existingRecords = await Attendance.find({
@@ -259,10 +293,18 @@ router.get('/teacher/attendance/manual/:subjectId', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false, message: 'Server Error' }); }
 });
 
-router.post('/teacher/attendance/manual', async (req, res) => {
+router.post('/teacher/attendance/manual', requireTeacher, async (req, res) => {
     try {
         const { subjectId, date, students } = req.body;
+        const ownership = await ensureTeacherOwnsSubject(req.session.userId, subjectId);
+        if (!ownership.ok) {
+            return res.status(ownership.status).json({ success: false, message: ownership.message });
+        }
+
         const targetDate = new Date(date);
+        if (Number.isNaN(targetDate.getTime())) {
+            return res.status(400).json({ success: false, message: 'Invalid date.' });
+        }
         for (const s of students) {
             const startOfDay = new Date(new Date(date).setUTCHours(0, 0, 0, 0));
             const endOfDay = new Date(new Date(date).setUTCHours(23, 59, 59, 999));
@@ -282,23 +324,17 @@ router.post('/teacher/attendance/manual', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false, message: 'Server Error' }); }
 });
 
-router.get('/api/subject/:subjectId/face-students', async (req, res) => {
+router.get('/api/subject/:subjectId/face-students', requireTeacher, async (req, res) => {
     try {
         const { subjectId } = req.params;
         const teacherId = req.session.userId;
-        const teacher = await User.findById(teacherId).select('role');
-
-        if (!teacher || teacher.role !== 'teacher') {
-            return res.status(403).json({ success: false, message: 'Only teachers can access this endpoint.' });
+        const ownership = await ensureTeacherOwnsSubject(teacherId, subjectId);
+        if (!ownership.ok) {
+            return res.status(ownership.status).json({ success: false, message: ownership.message });
         }
-
-        const subject = await Subject.findById(subjectId).populate('class');
-        if (!subject) {
-            return res.status(404).json({ success: false, message: 'Subject not found.' });
-        }
-
-        if (!subject.teacher || subject.teacher.toString() !== teacherId.toString()) {
-            return res.status(403).json({ success: false, message: 'Unauthorized subject access.' });
+        const subject = ownership.subject;
+        if (!subject.class?._id) {
+            return res.status(400).json({ success: false, message: 'Subject is not linked to a class.' });
         }
 
         const classWithStudents = await Class.findById(subject.class._id)
@@ -327,23 +363,21 @@ router.get('/api/subject/:subjectId/face-students', async (req, res) => {
     }
 });
 
-router.post('/api/mark-face-attendance', async (req, res) => {
+router.post('/api/mark-face-attendance', requireTeacher, async (req, res) => {
     try {
         const { subjectId, studentId } = req.body;
         const teacherId = req.session.userId;
-        const teacher = await User.findById(teacherId).select('role');
-
-        if (!teacher || teacher.role !== 'teacher') {
-            return res.status(403).json({ success: false, message: 'Only teachers can mark face attendance.' });
+        if (!subjectId || !studentId) {
+            return res.status(400).json({ success: false, message: 'subjectId and studentId are required.' });
         }
 
-        const subject = await Subject.findById(subjectId).populate('class');
-        if (!subject) {
-            return res.status(404).json({ success: false, message: 'Subject not found.' });
+        const ownership = await ensureTeacherOwnsSubject(teacherId, subjectId);
+        if (!ownership.ok) {
+            return res.status(ownership.status).json({ success: false, message: ownership.message });
         }
-
-        if (!subject.teacher || subject.teacher.toString() !== teacherId.toString()) {
-            return res.status(403).json({ success: false, message: 'Unauthorized subject access.' });
+        const subject = ownership.subject;
+        if (!subject.class?._id) {
+            return res.status(400).json({ success: false, message: 'Subject is not linked to a class.' });
         }
 
         const classDoc = await Class.findById(subject.class._id).select('students');
@@ -381,7 +415,7 @@ router.post('/api/mark-face-attendance', async (req, res) => {
     }
 });
 
-router.post('/teacher/class', async (req, res) => {
+router.post('/teacher/class', requireTeacher, async (req, res) => {
     try {
         const { className } = req.body;
         const newClass = new Class({ name: className, teacher: req.session.userId });
@@ -390,10 +424,16 @@ router.post('/teacher/class', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false, message: 'Error' }); }
 });
 
-router.post('/teacher/class/:classId/subject', async (req, res) => {
+router.post('/teacher/class/:classId/subject', requireTeacher, async (req, res) => {
     try {
         const { classId } = req.params;
         const { subjectName } = req.body;
+        const classDoc = await Class.findById(classId).select('teacher');
+        if (!classDoc) return res.status(404).json({ success: false, message: 'Class not found.' });
+        if (!classDoc.teacher || classDoc.teacher.toString() !== req.session.userId.toString()) {
+            return res.status(403).json({ success: false, message: 'Unauthorized class access.' });
+        }
+
         const newSubject = new Subject({ name: subjectName, class: classId, teacher: req.session.userId });
         await newSubject.save();
         await Class.findByIdAndUpdate(classId, { $push: { subjects: newSubject._id } });
@@ -402,9 +442,17 @@ router.post('/teacher/class/:classId/subject', async (req, res) => {
 });
 
 // [MODIFIED] Teacher Approval for Device Reset
-router.post('/teacher/reset-device', async (req, res) => {
+router.post('/teacher/reset-device', requireTeacher, async (req, res) => {
     try {
         const { studentId } = req.body;
+        const classWithStudent = await Class.findOne({
+            teacher: req.session.userId,
+            students: studentId
+        }).select('_id');
+        if (!classWithStudent) {
+            return res.status(403).json({ success: false, message: 'Student not found in your classes.' });
+        }
+
         // Reset deviceId AND clear the request flag
         await User.findByIdAndUpdate(studentId, {
             $set: {
@@ -417,10 +465,14 @@ router.post('/teacher/reset-device', async (req, res) => {
 });
 
 // ... (Delete and report routes remain same)
-router.delete('/teacher/class/:classId', async (req, res) => {
+router.delete('/teacher/class/:classId', requireTeacher, async (req, res) => {
     try {
         const { classId } = req.params;
         const classToDelete = await Class.findById(classId);
+        if (!classToDelete) return res.status(404).json({ success: false, message: 'Class not found.' });
+        if (!classToDelete.teacher || classToDelete.teacher.toString() !== req.session.userId.toString()) {
+            return res.status(403).json({ success: false, message: 'Unauthorized class access.' });
+        }
         if (classToDelete) {
             await Subject.deleteMany({ _id: { $in: classToDelete.subjects } });
             await Attendance.deleteMany({ subject: { $in: classToDelete.subjects } });
@@ -430,12 +482,16 @@ router.delete('/teacher/class/:classId', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false, message: 'Error' }); }
 });
 
-router.delete('/teacher/subject/:subjectId', async (req, res) => {
+router.delete('/teacher/subject/:subjectId', requireTeacher, async (req, res) => {
     try {
         const { subjectId } = req.params;
-        const subjectToDelete = await Subject.findById(subjectId);
-        if (subjectToDelete) {
-            await Class.findByIdAndUpdate(subjectToDelete.class, { $pull: { subjects: subjectId } });
+        const ownership = await ensureTeacherOwnsSubject(req.session.userId, subjectId);
+        if (!ownership.ok) {
+            return res.status(ownership.status).json({ success: false, message: ownership.message });
+        }
+        const subjectToDelete = ownership.subject;
+        if (subjectToDelete?.class?._id) {
+            await Class.findByIdAndUpdate(subjectToDelete.class._id, { $pull: { subjects: subjectId } });
         }
         await Attendance.deleteMany({ subject: subjectId });
         await Subject.findByIdAndDelete(subjectId);
@@ -443,7 +499,7 @@ router.delete('/teacher/subject/:subjectId', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false, message: 'Error' }); }
 });
 
-router.post('/teacher/generate-qr', async (req, res) => {
+router.post('/teacher/generate-qr', requireTeacher, async (req, res) => {
     try {
         const { subjectId } = req.body;
         const qrData = JSON.stringify({ subjectId: subjectId, timestamp: Date.now() });
@@ -451,11 +507,14 @@ router.post('/teacher/generate-qr', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false, message: 'Error' }); }
 });
 
-router.get('/teacher/subject/:subjectId/attendance-report', async (req, res) => {
+router.get('/teacher/subject/:subjectId/attendance-report', requireTeacher, async (req, res) => {
     try {
         const { subjectId } = req.params;
-        const subject = await Subject.findById(subjectId);
-        if (!subject) return res.status(404).send('Subject not found');
+        const ownership = await ensureTeacherOwnsSubject(req.session.userId, subjectId);
+        if (!ownership.ok) {
+            return res.status(ownership.status).send(ownership.message);
+        }
+        const subject = ownership.subject;
 
         const attendanceRecords = await Attendance.find({ subject: subjectId, status: 'present' })
             .populate('student', 'name email')
@@ -474,11 +533,14 @@ router.get('/teacher/subject/:subjectId/attendance-report', async (req, res) => 
     } catch (err) { res.status(500).json({ success: false, message: 'Error' }); }
 });
 
-router.get('/teacher/subject/:subjectId/export', async (req, res) => {
+router.get('/teacher/subject/:subjectId/export', requireTeacher, async (req, res) => {
     try {
         const { subjectId } = req.params;
-        const subject = await Subject.findById(subjectId);
-        if (!subject) return res.status(404).send('Subject not found');
+        const ownership = await ensureTeacherOwnsSubject(req.session.userId, subjectId);
+        if (!ownership.ok) {
+            return res.status(ownership.status).send(ownership.message);
+        }
+        const subject = ownership.subject;
 
         const records = await Attendance.find({ subject: subjectId, status: 'present' })
             .populate('student', 'name email').sort({ date: 'desc' });
