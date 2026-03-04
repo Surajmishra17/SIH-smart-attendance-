@@ -137,6 +137,45 @@
                         </a>
                     </div>
 
+                    <div id="face-attendance-panel" data-subject-id="<%= subject._id %>"
+                        class="mb-8 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="p-6 border-b border-slate-100 bg-gradient-to-r from-white to-slate-50/50">
+                            <h2 class="text-xl font-bold text-slate-800">Face Recognition Attendance</h2>
+                            <p class="text-sm text-slate-500 mt-1">Start webcam scan to auto-mark present students.</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                <div class="lg:col-span-2">
+                                    <div class="relative w-full aspect-video bg-slate-900 rounded-xl overflow-hidden">
+                                        <video id="face-attendance-video" autoplay muted playsinline
+                                            class="w-full h-full object-cover"></video>
+                                        <canvas id="face-attendance-overlay"
+                                            class="absolute inset-0 w-full h-full"></canvas>
+                                    </div>
+                                </div>
+                                <div class="space-y-3">
+                                    <p id="face-attendance-status" class="text-sm text-slate-600">Not started.</p>
+                                    <p id="face-attendance-liveness" class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                                        Liveness check: blink once in view to enable marking.
+                                    </p>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
+                                        <button id="start-face-attendance-btn" type="button"
+                                            class="bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-indigo-700 transition-colors">
+                                            Start Face Attendance
+                                        </button>
+                                        <button id="stop-face-attendance-btn" type="button"
+                                            class="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-slate-200 transition-colors">
+                                            Stop Camera
+                                        </button>
+                                    </div>
+                                    <ul id="face-attendance-log"
+                                        class="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-1 max-h-40 overflow-y-auto">
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                         <div class="p-6 border-b border-slate-100 bg-gradient-to-r from-white to-slate-50/50">
                             <h2 class="text-xl font-bold text-slate-800 flex items-center">
@@ -247,6 +286,7 @@
         </div>
     </div>
 
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="/javascripts/subject-attendance.js"></script>
 </body>
 

@@ -11,6 +11,7 @@ const settings = require('./routes/settings');
 app.set('view engine', 'ejs')
 app.use(express.static(path.join(__dirname, 'public')))
 app.use('/javascripts', express.static(path.join(__dirname, 'javascripts')))
+app.use('/models', express.static(path.join(__dirname, 'public', 'models')))
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json())
 
