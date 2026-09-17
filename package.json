@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/Surajmishra17/SIH-smart-attendance-#readme",
   "dependencies": {
+    "@simplewebauthn/browser": "^13.2.2",
+    "@simplewebauthn/server": "^13.2.2",
     "bcryptjs": "^3.0.2",
     "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
